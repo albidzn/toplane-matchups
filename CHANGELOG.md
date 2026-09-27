@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.3.0] - 2026-09-28
+
+### Added
+- **My Pool**: search by champion name, and sort by mastery, winrate, matchup count or name (previously fixed to matchup count only).
+- **Live tab — in-game scoreboard**: once the game's Live Client API confirms it, each player's row switches from pregame rank/mastery to their live level, KDA, CS and current items, refreshed continuously for the rest of the game.
+- **Live tab — postgame summary**: a win/loss banner with your final KDA/CS vs. your lane opponent's, and a quick note field that saves straight onto the matching pick (creating it if you hadn't picked that champion into this matchup yet).
+
 ## [1.2.2] - 2026-09-27
 
 ### Fixed

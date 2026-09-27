@@ -3,6 +3,15 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.4.0] - 2026-09-28
+
+### Added
+- **Champ select**: your own pick now shows immediately — including a hover/preview before you lock in — with your winrate, KDA and mastery on that champion.
+
+### Fixed
+- Live tab roster rows (champ select, loading screen, in-game scoreboard, postgame) now sort in standard role order (Top, Jungle, Mid, Bot, Support) instead of whatever order the API happened to return them in.
+- The "YOU" tag on the in-game scoreboard was showing on every one of your team's rows instead of just yours.
+
 ## [1.3.0] - 2026-09-28
 
 ### Added

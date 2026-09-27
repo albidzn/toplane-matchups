@@ -28,7 +28,7 @@ export default function ChampIcon({
   const [loaded, setLoaded] = useState(false);
   const label = name ?? championId;
   const initial = label.charAt(0).toUpperCase();
-  const showFallback = errored || !ddragonVersion;
+  const showImg = Boolean(ddragonVersion) && !errored;
 
   return (
     <div
@@ -36,19 +36,20 @@ export default function ChampIcon({
       style={{ width: size, height: size }}
       title={label}
     >
-      {showFallback ? (
-        <div
-          className="flex h-full w-full animate-fade-in items-center justify-center bg-gradient-to-br from-ink-700 to-ink-850 font-display font-bold text-gold-500"
-          style={{ fontSize: size * 0.4 }}
-        >
-          {initial}
-        </div>
-      ) : (
+      {/* Letter fallback sits underneath so there's never a blank box while the
+          icon is still loading — the image just fades in on top once it's ready. */}
+      <div
+        className="flex h-full w-full items-center justify-center bg-gradient-to-br from-ink-700 to-ink-850 font-display font-bold text-gold-500"
+        style={{ fontSize: size * 0.4 }}
+      >
+        {initial}
+      </div>
+      {showImg && (
         <img
-          src={championIconUrl(ddragonVersion, championId)}
+          src={championIconUrl(ddragonVersion!, championId)}
           alt={label}
           loading="lazy"
-          className={`h-full w-full object-cover transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setLoaded(true)}
           onError={() => setErrored(true)}
         />

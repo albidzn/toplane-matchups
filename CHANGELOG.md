@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.2.1] - 2026-09-27
+
+### Fixed
+- Rune tree icons on the Live tab were 404ing (wrong CommunityDragon path/casing) and showed nothing — fixed the URL.
+- Champion icons (and other remote images with a fallback) showed a blank box while their first load was in flight instead of the letter-avatar placeholder — the placeholder now stays visible underneath until the real icon has loaded, so there's no blank flash on first paint.
+
 ## [1.2.0] - 2026-09-27
 
 ### Added

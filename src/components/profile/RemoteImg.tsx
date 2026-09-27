@@ -7,19 +7,38 @@ interface RemoteImgProps {
   fallback?: React.ReactNode;
 }
 
-/** <img> that swaps to a fallback node on load error, e.g. for CDN assets that might 404. */
+/** <img> that shows `fallback` (if given) while loading and swaps to it permanently on error. */
 export default function RemoteImg({ src, alt, className = "", fallback = null }: RemoteImgProps) {
   const [errored, setErrored] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
   if (errored) return <>{fallback}</>;
+
+  // No fallback to show underneath — keep the old (simpler) behaviour.
+  if (!fallback) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className={`transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setErrored(true)}
+      />
+    );
+  }
+
   return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      className={`transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
-      onLoad={() => setLoaded(true)}
-      onError={() => setErrored(true)}
-    />
+    <div className={`relative overflow-hidden ${className}`}>
+      {!loaded && fallback}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setErrored(true)}
+      />
+    </div>
   );
 }

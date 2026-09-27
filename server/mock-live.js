@@ -2,6 +2,9 @@
 // through champselect -> loading -> in-progress -> idle on a timer so the
 // UI can be built/tested without a real League client or match running.
 import { EventEmitter } from "node:events";
+import { runeTreeIcon } from "./live-game.js";
+
+const RUNE_STYLES = [8000, 8100, 8200, 8300, 8400];
 
 const MY_TEAM_CHAMPS = ["Sett", "LeeSin", "Ahri", "Jinx", "Thresh"];
 const ENEMY_CHAMPS = ["Darius", "Skarner", "Syndra", "Caitlyn", "Nautilus"]; // cellId 5=top .. 9=support
@@ -110,8 +113,8 @@ export function createMockLiveGameService({ getChampions }) {
           profileIconId: 29 + i,
           spell1Id: 4,
           spell2Id: isMine ? 6 : 14,
-          runeTreeIcon: null,
-          runeSubTreeIcon: null,
+          runeTreeIcon: runeTreeIcon(RUNE_STYLES[i % RUNE_STYLES.length]),
+          runeSubTreeIcon: runeTreeIcon(RUNE_STYLES[(i + 2) % RUNE_STYLES.length]),
           rankSolo: { tier: "GOLD", rank: "II", lp: 30 + i, wins, losses: games - wins },
           masteryLevel: Math.min(7, 1 + Math.floor(rand() * 7)),
           masteryPoints: Math.floor(rand() * 200000),

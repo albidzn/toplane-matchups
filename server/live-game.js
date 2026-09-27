@@ -9,16 +9,18 @@ const LIVECLIENT_POLL_MS = 3000;
 const ENEMY_DEEPDIVE_GAMES = 6; // recent games fetched for the highlighted enemy laner
 
 // Perk sub-style (rune tree) icons — a small fixed set, no need to fetch the full perk tree.
+// CommunityDragon serves these under an all-lowercase path (verified against
+// perkstyles.json, whose own iconPath casing 404s — the asset itself is lowercase).
 const RUNE_TREE_ICON = {
-  8000: "perk-images/Styles/7201_Precision.png",
-  8100: "perk-images/Styles/7200_Domination.png",
-  8200: "perk-images/Styles/7202_Sorcery.png",
-  8300: "perk-images/Styles/7203_Whimsy.png",
-  8400: "perk-images/Styles/7204_Resolve.png",
+  8000: "7201_precision.png",
+  8100: "7200_domination.png",
+  8200: "7202_sorcery.png",
+  8300: "7203_whimsy.png",
+  8400: "7204_resolve.png",
 };
-const CDRAGON_PERK_BASE = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/";
+const CDRAGON_PERK_BASE = "https://raw.communitydragon.org/latest/game/assets/perks/styles/";
 
-function runeTreeIcon(styleId) {
+export function runeTreeIcon(styleId) {
   const path = RUNE_TREE_ICON[styleId];
   return path ? `${CDRAGON_PERK_BASE}${path}` : null;
 }

@@ -3,6 +3,7 @@ import { createLcuConnector } from "./lcu.js";
 import { getLiveClientData } from "./liveclient.js";
 import { createRiotClient, RiotApiError } from "./riot.js";
 import { guessEnemyPositions, linkSpectatorParticipants, applyLiveClientPositions } from "./lane.js";
+import { mergeLiveClientStats, detectGameEndResult } from "./live-stats.js";
 
 const LCU_POLL_MS = 2000;
 const LIVECLIENT_POLL_MS = 3000;
@@ -144,6 +145,15 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
       rankSolo: mapLeagueEntry(entries, "RANKED_SOLO_5x5"),
       masteryLevel: mastery?.championLevel ?? null,
       masteryPoints: mastery?.championPoints ?? null,
+      // Live scoreboard stats — null until the Live Client API confirms them,
+      // which is how the UI knows whether to show "pre-game" or "in-game" info.
+      level: null,
+      kills: null,
+      deaths: null,
+      assists: null,
+      cs: null,
+      items: [],
+      isDead: false,
     };
   }
 
@@ -197,7 +207,11 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
 
   async function pollLiveClient() {
     const data = await getLiveClientData();
-    if (!data?.allPlayers?.length) return;
+    if (!data?.allPlayers?.length) {
+      // The game process has likely closed (post-game screen) — nothing to
+      // update, but keep whatever roster/result we last captured as-is.
+      return;
+    }
     liveClientCache = data.allPlayers;
     if (!state.game) return;
 
@@ -206,14 +220,20 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
       applyLiveClientPositions(state.game.roster.map((r) => ({ ...r })), liveClientCache),
       myTeamId
     );
-    const changed = positioned.some((r, i) => r.position !== state.game.roster[i].position);
-    if (!changed) return;
+    // Live stats (level/KDA/CS/items) change essentially every tick once the
+    // game is actually running — merge them in unconditionally rather than
+    // gating on whether a *position* changed (that alone would silently
+    // drop every scoreboard update once positions had already settled).
+    const statted = mergeLiveClientStats(positioned, liveClientCache);
 
-    const enemyTop = positioned.find((r) => r.teamId !== myTeamId && r.position === "TOP");
-    const isNewEnemyLaner = enemyTop && enemyTop.puuid !== state.game.enemyLaner?.puuid;
+    const positionChanged = statted.some((r, i) => r.position !== state.game.roster[i].position);
+    const enemyTop = statted.find((r) => r.teamId !== myTeamId && r.position === "TOP");
+    const isNewEnemyLaner = positionChanged && enemyTop && enemyTop.puuid !== state.game.enemyLaner?.puuid;
     const enemyLaner = enemyTop ? { ...state.game.enemyLaner, ...enemyTop } : state.game.enemyLaner;
 
-    setState({ game: { ...state.game, roster: positioned, enemyLaner } });
+    const result = state.game.result ?? detectGameEndResult(data.events?.Events);
+
+    setState({ game: { ...state.game, roster: statted, enemyLaner, result } });
 
     // The champ-select guess was wrong or unavailable — Live Client just told us
     // who's really top for the enemy team, so fetch their deep-dive now.
@@ -315,7 +335,15 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
         return;
       }
 
-      // any other phase (None, Lobby, Matchmaking, ReadyCheck, WaitingForStats, PreEndOfGame, EndOfGame, ...)
+      if (phase === "WaitingForStats" || phase === "PreEndOfGame" || phase === "EndOfGame") {
+        // The match just ended — freeze whatever roster/result we last saw
+        // (the game process closes shortly after this, so there's nothing
+        // more to poll) and let the post-game summary show it.
+        if (state.phase !== "postgame" && state.game) setState({ phase: "postgame" });
+        return;
+      }
+
+      // any other phase (None, Lobby, Matchmaking, ReadyCheck, TerminatedInError, FailedToLaunch, ...)
       if (state.phase !== "idle") {
         setState({ phase: "idle", champSelect: null, game: null });
         cellOverride = null;

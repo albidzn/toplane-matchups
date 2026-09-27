@@ -10,6 +10,7 @@ const MY_TEAM_CHAMPS = ["Sett", "LeeSin", "Ahri", "Jinx", "Thresh"];
 const ENEMY_CHAMPS = ["Darius", "Skarner", "Syndra", "Caitlyn", "Nautilus"]; // cellId 5=top .. 9=support
 const POSITIONS = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
 const BAN_POOL = ["Yone", "Zed", "Akali", "Vayne", "KSante", "Kayn", "Azir", "Kalista"];
+const ITEM_POOL = [1001, 1055, 3071, 3068, 3044, 3153, 3742, 2003]; // boots, components, a couple of finished items
 
 function seededRandom(seed) {
   let s = seed;
@@ -118,6 +119,13 @@ export function createMockLiveGameService({ getChampions }) {
           rankSolo: { tier: "GOLD", rank: "II", lp: 30 + i, wins, losses: games - wins },
           masteryLevel: Math.min(7, 1 + Math.floor(rand() * 7)),
           masteryPoints: Math.floor(rand() * 200000),
+          level: null,
+          kills: null,
+          deaths: null,
+          assists: null,
+          cs: null,
+          items: [],
+          isDead: false,
         };
       });
       const enemyLaner = {
@@ -134,8 +142,39 @@ export function createMockLiveGameService({ getChampions }) {
     });
 
     after(17000, () => setState({ phase: "in-progress" }));
-    after(30000, () => setState({ phase: "idle", champSelect: null, game: null }));
-    after(35000, runCycle); // loop, so the tab auto-switch is easy to re-observe
+
+    // --- live scoreboard: level/KDA/CS/items tick up a few times while "in-progress" ---
+    [18500, 22000, 25500].forEach((delay, tickIndex) => {
+      after(delay, () => {
+        if (!state.game) return;
+        const minute = tickIndex + 1;
+        const roster = state.game.roster.map((r, i) => {
+          const isMine = r.teamId === 100;
+          const skill = isMine ? 0.55 : 0.45; // my team's slightly ahead, for a believable enemy-laner card
+          return {
+            ...r,
+            level: Math.min(18, 3 + minute * 2 + (i % 2)),
+            kills: Math.floor(rand() * minute * skill * 2),
+            deaths: Math.floor(rand() * minute * (1 - skill) * 1.5),
+            assists: Math.floor(rand() * minute * 1.5),
+            cs: Math.round(minute * (26 + rand() * 4)),
+            items: ITEM_POOL.slice(0, Math.min(ITEM_POOL.length, 1 + minute)),
+            isDead: false,
+          };
+        });
+        const enemyLaner = { ...state.game.enemyLaner, ...roster.find((r) => r.puuid === state.game.enemyLaner?.puuid) };
+        setState({ game: { ...state.game, roster, enemyLaner } });
+      });
+    });
+
+    after(26000, () => {
+      if (!state.game) return;
+      setState({ game: { ...state.game, result: "Win" } });
+    });
+    after(27000, () => setState({ phase: "postgame" }));
+
+    after(34000, () => setState({ phase: "idle", champSelect: null, game: null }));
+    after(39000, runCycle); // loop, so the tab auto-switch is easy to re-observe
   }
 
   return {

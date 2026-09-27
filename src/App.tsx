@@ -29,6 +29,7 @@ export default function App() {
     removeEnemy,
     addPick,
     updatePickNote,
+    upsertPickNote,
     removePick,
     movePick,
   } = useMatchups();
@@ -266,6 +267,7 @@ export default function App() {
             enemies={data.enemies}
             recordsByEnemy={recordsByEnemy}
             onQuickAdd={addEnemy}
+            onSaveNote={upsertPickNote}
           />
         ) : tab === "pool" ? (
           <PoolView

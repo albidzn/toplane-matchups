@@ -139,6 +139,25 @@ export function useMatchups() {
     [mutate]
   );
 
+  // Used by the postgame quick-note UI: writes a note for {enemyId, championId},
+  // creating the pick if this champion hasn't been picked into that matchup yet.
+  const upsertPickNote = useCallback(
+    (enemyId: string, championId: string, note: string) => {
+      mutate((prev) => ({
+        ...prev,
+        enemies: prev.enemies.map((e) => {
+          if (e.id !== enemyId) return e;
+          const existing = e.picks.find((p) => p.champion === championId);
+          if (existing) {
+            return { ...e, picks: e.picks.map((p) => (p.id === existing.id ? { ...p, note } : p)) };
+          }
+          return { ...e, picks: [...e.picks, { id: uid(), champion: championId, note }] };
+        }),
+      }));
+    },
+    [mutate]
+  );
+
   const removePick = useCallback(
     (enemyId: string, pickId: string) => {
       mutate((prev) => ({
@@ -194,6 +213,7 @@ export function useMatchups() {
     removeEnemy,
     addPick,
     updatePickNote,
+    upsertPickNote,
     removePick,
     movePick,
   };

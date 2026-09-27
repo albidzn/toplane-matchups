@@ -3,6 +3,7 @@ import type { WinLoss } from "../../hooks/useProfile";
 import { overrideChampSelectEnemyLaner, overrideGameEnemyLaner } from "../../lib/api";
 import ChampSelectView from "./ChampSelectView";
 import LoadingScreenView from "./LoadingScreenView";
+import PostGameBanner from "./PostGameBanner";
 
 interface LiveViewProps {
   live: LiveState;
@@ -11,9 +12,18 @@ interface LiveViewProps {
   enemies: Enemy[];
   recordsByEnemy: Map<string, Map<string, WinLoss>>;
   onQuickAdd: (championId: string) => void;
+  onSaveNote: (enemyId: string, championId: string, note: string) => void;
 }
 
-export default function LiveView({ live, champions, ddragonVersion, enemies, recordsByEnemy, onQuickAdd }: LiveViewProps) {
+export default function LiveView({
+  live,
+  champions,
+  ddragonVersion,
+  enemies,
+  recordsByEnemy,
+  onQuickAdd,
+  onSaveNote,
+}: LiveViewProps) {
   if (!live.lcuConnected) {
     return (
       <div className="flex h-full animate-fade-in flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-ink-700 text-center">
@@ -51,6 +61,39 @@ export default function LiveView({ live, champions, ddragonVersion, enemies, rec
         onOverride={(puuid) => overrideGameEnemyLaner(puuid)}
         onQuickAdd={onQuickAdd}
       />
+    );
+  }
+
+  if (live.phase === "postgame" && live.game) {
+    const enemyChampId = live.game.enemyLaner?.championId ?? null;
+    const matchingEnemy = enemyChampId ? enemies.find((e) => e.champion === enemyChampId) ?? null : null;
+
+    return (
+      <div className="scrollbar-thin h-full animate-fade-in space-y-4 overflow-y-auto pr-1">
+        <PostGameBanner
+          game={live.game}
+          champions={champions}
+          ddragonVersion={ddragonVersion}
+          matchingEnemy={matchingEnemy}
+          onQuickAdd={() => onQuickAdd(enemyChampId!)}
+          onSaveNote={(note) => {
+            const myTop = live.game!.roster.find((p) => p.teamId === live.game!.myTeamId && p.position === "TOP");
+            if (matchingEnemy && myTop?.championId) onSaveNote(matchingEnemy.id, myTop.championId, note);
+          }}
+        />
+        <LoadingScreenView
+          game={live.game}
+          champions={champions}
+          ddragonVersion={ddragonVersion}
+          enemies={enemies}
+          recordsByEnemy={recordsByEnemy}
+          live={false}
+          editable={false}
+          title="Final scoreboard"
+          onOverride={() => {}}
+          onQuickAdd={onQuickAdd}
+        />
+      </div>
     );
   }
 

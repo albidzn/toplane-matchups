@@ -10,6 +10,8 @@ interface LoadingScreenViewProps {
   enemies: Enemy[];
   recordsByEnemy: Map<string, Map<string, WinLoss>>;
   live: boolean;
+  editable?: boolean;
+  title?: string;
   onOverride: (puuid: string) => void;
   onQuickAdd: (championId: string) => void;
 }
@@ -21,6 +23,8 @@ export default function LoadingScreenView({
   enemies,
   recordsByEnemy,
   live,
+  editable = true,
+  title,
   onOverride,
   onQuickAdd,
 }: LoadingScreenViewProps) {
@@ -53,7 +57,8 @@ export default function LoadingScreenView({
       <div className="rounded-2xl border border-ink-700 bg-ink-900/60 p-3">
         <div className="mb-2 flex items-center justify-between px-1">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {live ? "Scoreboard" : "Lobby"} <span className="text-slate-600">· {myTeam.length + enemyTeam.length} players</span>
+            {title ?? (live ? "Scoreboard" : "Lobby")}{" "}
+            <span className="text-slate-600">· {myTeam.length + enemyTeam.length} players</span>
           </h3>
         </div>
         <div className="space-y-0.5">
@@ -70,7 +75,7 @@ export default function LoadingScreenView({
               champions={champions}
               ddragonVersion={ddragonVersion}
               isEnemyLaner={p.puuid === game.enemyLaner?.puuid}
-              editable={p.puuid !== game.enemyLaner?.puuid}
+              editable={editable && p.puuid !== game.enemyLaner?.puuid}
               onPickAsEnemyLaner={() => onOverride(p.puuid)}
             />
           ))}

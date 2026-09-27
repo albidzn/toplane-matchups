@@ -135,7 +135,7 @@ export interface SettingsInput {
 
 // ---------- Live game ----------
 
-export type LivePhase = "idle" | "champselect" | "loading" | "in-progress";
+export type LivePhase = "idle" | "champselect" | "loading" | "in-progress" | "postgame";
 
 export interface ChampSelectSlot {
   cellId: number;
@@ -172,6 +172,14 @@ export interface LiveParticipant {
   rankSolo: { tier: string; rank: string; lp: number; wins: number; losses: number } | null;
   masteryLevel: number | null;
   masteryPoints: number | null;
+  /** Live scoreboard stats — null until the Live Client API has confirmed them (i.e. the game has actually started rendering). */
+  level: number | null;
+  kills: number | null;
+  deaths: number | null;
+  assists: number | null;
+  cs: number | null;
+  items: number[]; // Data Dragon numeric item ids
+  isDead: boolean;
 }
 
 export interface EnemyLaner extends LiveParticipant {
@@ -187,6 +195,8 @@ export interface LiveGameState {
   myTeamId: number;
   roster: LiveParticipant[];
   enemyLaner: EnemyLaner | null;
+  /** "Win"/"Lose" once the Live Client API's event log reports it (may arrive before the phase itself flips to postgame), else null. */
+  result?: "Win" | "Lose" | null;
 }
 
 export interface LiveState {

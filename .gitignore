@@ -1,0 +1,14 @@
+node_modules
+dist
+data/matchups.backup.json
+data/champions-cache.json
+data/match-cache.json
+data/settings.json
+.env
+.env.*
+!.env.example
+release
+coverage
+*.log
+.vscode
+build/icon.ico

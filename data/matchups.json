@@ -1,0 +1,550 @@
+{
+  "version": 1,
+  "enemies": [
+    {
+      "id": "129b3941-abe2-4014-b5b1-7dc570857eee",
+      "champion": "Aatrox",
+      "picks": [
+        {
+          "id": "9016758c-3df4-4677-b312-b2cfcfae5fc3",
+          "champion": "Sett",
+          "note": "PTA + Ignite"
+        }
+      ]
+    },
+    {
+      "id": "9a9ca861-9252-443e-af31-7ae37296ac1d",
+      "champion": "Akali",
+      "picks": []
+    },
+    {
+      "id": "f120d7d7-19f1-4aa1-8450-a1866f92f1ac",
+      "champion": "Aurora",
+      "picks": [
+        {
+          "id": "1484cf4b-68b8-4064-a7ec-d58c48f2223d",
+          "champion": "Viktor",
+          "note": ""
+        },
+        {
+          "id": "bc895060-c71a-4f87-ac24-83cd4dbf041d",
+          "champion": "DrMundo",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "99f3d904-e4aa-4983-b68f-9658480f3e00",
+      "champion": "Camille",
+      "picks": []
+    },
+    {
+      "id": "6b7510a6-3971-4727-b88b-eb222d5e61d6",
+      "champion": "Chogath",
+      "picks": []
+    },
+    {
+      "id": "85b445d8-6d67-4790-9437-d1e474d23d15",
+      "champion": "Darius",
+      "picks": [
+        {
+          "id": "eaed88a1-9503-4292-86a1-73774ccdc0ae",
+          "champion": "DrMundo",
+          "note": "chill early"
+        },
+        {
+          "id": "840af2f6-938e-4e8f-b270-eeff7c463307",
+          "champion": "Nasus",
+          "note": "chill early"
+        }
+      ]
+    },
+    {
+      "id": "a204e40a-61c5-40c1-b2bf-8fcf4835da5d",
+      "champion": "DrMundo",
+      "picks": [
+        {
+          "id": "251abca9-9f0e-4254-b42b-b3a4877d9aea",
+          "champion": "Ornn",
+          "note": ""
+        },
+        {
+          "id": "8565a952-51b1-483e-bd8a-dde94a8b7773",
+          "champion": "Yone",
+          "note": ""
+        },
+        {
+          "id": "0f846e3c-03fc-4e39-b799-e218e0985211",
+          "champion": "Nasus",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "cdacdac5-6731-4ada-ae6e-4db74babb908",
+      "champion": "Fiora",
+      "picks": [
+        {
+          "id": "50ab6e23-bceb-4252-92e7-637c9ecfbd5f",
+          "champion": "Ambessa",
+          "note": "Grasp + TP"
+        }
+      ]
+    },
+    {
+      "id": "4332a8d4-22d5-4ef2-8526-42b2aed25e3f",
+      "champion": "Gangplank",
+      "picks": [
+        {
+          "id": "919ebdf4-b8a1-42d8-991e-68bda3e79ce1",
+          "champion": "DrMundo",
+          "note": "ghost"
+        }
+      ]
+    },
+    {
+      "id": "b0b4d5f9-d358-49f0-9250-3f100a52bd41",
+      "champion": "Garen",
+      "picks": [
+        {
+          "id": "0c80f634-14a5-4c2b-ac5d-56869cfb7bdd",
+          "champion": "Darius",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "83f17fb8-de46-4a80-a11d-79f60c0900e2",
+      "champion": "Gnar",
+      "picks": [
+        {
+          "id": "159e90b6-8df8-40e6-a551-43fee93f1774",
+          "champion": "Ambessa",
+          "note": "Grasp + TP"
+        }
+      ]
+    },
+    {
+      "id": "b9f40a35-469b-4a0d-bc70-4499bcb01bb5",
+      "champion": "Gragas",
+      "picks": [
+        {
+          "id": "a3abe95b-865f-495f-be91-7a1f58754875",
+          "champion": "KSante",
+          "note": ""
+        },
+        {
+          "id": "fc005e53-391c-4446-b14b-fa47c136061b",
+          "champion": "DrMundo",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "407b4097-43b2-467b-8960-505a40297012",
+      "champion": "Gwen",
+      "picks": []
+    },
+    {
+      "id": "36c03cb3-035f-4f4b-b79c-a9132cbc628b",
+      "champion": "Heimerdinger",
+      "picks": []
+    },
+    {
+      "id": "e43076e4-7d28-4f8c-8b49-db357680e553",
+      "champion": "Illaoi",
+      "picks": []
+    },
+    {
+      "id": "ca84e760-8c4f-48f6-8362-8bec22473e41",
+      "champion": "Irelia",
+      "picks": [
+        {
+          "id": "80c4f843-7985-4769-9ae4-9f38c61245c5",
+          "champion": "Sett",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "c4551bf3-4a87-47ae-a40b-2c1884a69a17",
+      "champion": "Jax",
+      "picks": [
+        {
+          "id": "1853f130-24ea-4c15-a156-fe82eeb71a6c",
+          "champion": "Garen",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "bf643e1e-979e-4231-b1b5-ea0e22187867",
+      "champion": "Jayce",
+      "picks": []
+    },
+    {
+      "id": "9f669401-b2f7-4991-bcb4-c156d90fb66c",
+      "champion": "KSante",
+      "picks": [
+        {
+          "id": "8d196458-e035-4c28-b305-48111a7109e7",
+          "champion": "Garen",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "425c6806-b8dc-4f2a-bb33-abe4b24d70fd",
+      "champion": "Kayle",
+      "picks": []
+    },
+    {
+      "id": "9955d61c-32bc-4aa0-8895-980d13029e84",
+      "champion": "Kennen",
+      "picks": [
+        {
+          "id": "45752151-1570-48f9-8745-c8732ece75cb",
+          "champion": "Malphite",
+          "note": ""
+        },
+        {
+          "id": "0a29336a-a093-454d-b0ed-cf69976dc081",
+          "champion": "DrMundo",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "f39e0221-1c69-4763-a379-3faf5c6ffec5",
+      "champion": "Kled",
+      "picks": []
+    },
+    {
+      "id": "f6148127-7eeb-40b8-a90c-7d5e673288a6",
+      "champion": "Malphite",
+      "picks": [
+        {
+          "id": "e6285838-6a28-4e5d-ba80-11d0c305c087",
+          "champion": "Sylas",
+          "note": ""
+        },
+        {
+          "id": "49c6064d-8be6-4d56-8894-cad4d2532909",
+          "champion": "Ambessa",
+          "note": "Grasp + TP"
+        }
+      ]
+    },
+    {
+      "id": "7a966835-4fc5-4870-b8c1-1e0c4a72b678",
+      "champion": "Mordekaiser",
+      "picks": [
+        {
+          "id": "38d3721a-7f10-47bc-b5de-7eec20471f18",
+          "champion": "DrMundo",
+          "note": "cant be ulted with passive shield"
+        },
+        {
+          "id": "db98dcf2-c2b5-4780-a049-d3f0aa79b6c5",
+          "champion": "Nasus",
+          "note": "sheen outscaled"
+        }
+      ]
+    },
+    {
+      "id": "064cd94b-4f55-4157-98a1-251f36c3d2cb",
+      "champion": "Nasus",
+      "picks": [
+        {
+          "id": "c31357ff-399d-481a-9775-99e546a09425",
+          "champion": "Sylas",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "6d6179d1-fddd-4e35-bf29-e68d98c46cb7",
+      "champion": "Olaf",
+      "picks": []
+    },
+    {
+      "id": "c0011345-30e4-466b-a287-adc7ac2cc5ec",
+      "champion": "Ornn",
+      "picks": [
+        {
+          "id": "32d0c1f0-7d55-499c-b3bd-e57e2527d62e",
+          "champion": "Illaoi",
+          "note": ""
+        },
+        {
+          "id": "2dfecccd-1cc2-4d2f-b597-f8a79055d153",
+          "champion": "KSante",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "203d0ef7-dd72-43e9-be3f-6555cd5aef67",
+      "champion": "Pantheon",
+      "picks": []
+    },
+    {
+      "id": "f9f18d50-b931-42f4-a217-48096ff5c9b2",
+      "champion": "Poppy",
+      "picks": []
+    },
+    {
+      "id": "1782f9de-d8e8-4d29-aff7-aa5ee2a0845c",
+      "champion": "Quinn",
+      "picks": [
+        {
+          "id": "4b17a8c8-463b-4268-b809-952452a6f0b6",
+          "champion": "Malphite",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "0a0df432-d5d7-476e-af2a-c72afab1aa7b",
+      "champion": "Renekton",
+      "picks": []
+    },
+    {
+      "id": "52ed2a7f-cb4b-49af-b81a-023c2a1a1f8b",
+      "champion": "Riven",
+      "picks": [
+        {
+          "id": "8773327b-64b0-4df1-8432-751cd5783773",
+          "champion": "Mordekaiser",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "35a1a9b0-b159-4637-8651-bae84355015d",
+      "champion": "Rumble",
+      "picks": []
+    },
+    {
+      "id": "26fdac47-0ecb-440a-96d8-18891ad1a2b8",
+      "champion": "Sett",
+      "picks": [
+        {
+          "id": "21ce7067-4390-4e1a-9368-906eca57b4cc",
+          "champion": "Ambessa",
+          "note": "Grasp + TP"
+        }
+      ]
+    },
+    {
+      "id": "d9b2efcd-218b-4288-9bc4-fcd6d2381023",
+      "champion": "Shen",
+      "picks": []
+    },
+    {
+      "id": "98e749d1-c6d4-4b46-a27f-72f474c04f89",
+      "champion": "Singed",
+      "picks": []
+    },
+    {
+      "id": "19f9ea1a-5f32-4483-80d1-b6694a3ceffc",
+      "champion": "Sion",
+      "picks": [
+        {
+          "id": "11eee439-ea15-4117-9aa2-decb0e42d9b0",
+          "champion": "Zaahen",
+          "note": ""
+        },
+        {
+          "id": "b71ce520-3a95-43de-a206-91f39a7fddf3",
+          "champion": "Darius",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "59f4d0c6-0182-4c86-90af-4d8475245548",
+      "champion": "Sylas",
+      "picks": [
+        {
+          "id": "edb2988b-d96d-4bda-8bae-94d2ad0230a5",
+          "champion": "Yone",
+          "note": ""
+        },
+        {
+          "id": "faa19968-b8a6-480a-8643-6632bff8e5aa",
+          "champion": "Zaahen",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "0671d141-28d9-49df-b00c-0a9926ea11c2",
+      "champion": "TahmKench",
+      "picks": []
+    },
+    {
+      "id": "ec1067f5-e728-431f-aae1-6ab6abf8cd34",
+      "champion": "Teemo",
+      "picks": [
+        {
+          "id": "f6c9bdb8-61bf-4516-bdc7-2edec68a51e1",
+          "champion": "Sion",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "f01de0a2-d0a0-4718-8d79-e25dc7773074",
+      "champion": "Trundle",
+      "picks": []
+    },
+    {
+      "id": "7a05f431-e39f-4de1-b516-50af7c4bd534",
+      "champion": "Tryndamere",
+      "picks": []
+    },
+    {
+      "id": "c4af7a3f-06fa-4bcd-b95e-91ac9617f8e4",
+      "champion": "Urgot",
+      "picks": []
+    },
+    {
+      "id": "a24bceb0-485c-4508-b9fa-9dbb64ab3efa",
+      "champion": "Varus",
+      "picks": []
+    },
+    {
+      "id": "96f9337f-9497-4656-a983-d16780149376",
+      "champion": "Vayne",
+      "picks": []
+    },
+    {
+      "id": "cc7b8ee2-d520-42d4-bac1-d8c7d5995298",
+      "champion": "Vladimir",
+      "picks": [
+        {
+          "id": "dccbc1c8-677b-4fbf-8fee-59430cc9abcb",
+          "champion": "Yorick",
+          "note": ""
+        },
+        {
+          "id": "8ccafaef-b9ea-42b6-b0cf-da016c1b0af1",
+          "champion": "Nasus",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "78a90588-6205-41a7-a0ea-ef6a1cdc9d44",
+      "champion": "Volibear",
+      "picks": []
+    },
+    {
+      "id": "c60d0e44-fc87-413d-a47a-0d57c5c5de83",
+      "champion": "Zaahen",
+      "picks": [
+        {
+          "id": "259f748e-5a49-4edc-9e92-4a81dee2e023",
+          "champion": "Yorick",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "58957e98-dccd-49da-b825-7287af369f5d",
+      "champion": "Zac",
+      "picks": []
+    },
+    {
+      "id": "5b1e6bc9-8810-4283-aa10-0da86cbba629",
+      "champion": "Yone",
+      "picks": []
+    },
+    {
+      "id": "ee41580d-e0ca-4b05-9d4b-593b02222113",
+      "champion": "Zed",
+      "picks": []
+    },
+    {
+      "id": "30e67a5e-1c3e-4bbb-9ab3-99bd0b9960f2",
+      "champion": "Ambessa",
+      "picks": []
+    },
+    {
+      "id": "0c5e7433-f0d2-4c47-b34c-ee0fb6f429ab",
+      "champion": "Anivia",
+      "picks": []
+    },
+    {
+      "id": "b5c3e35b-c8c6-415a-834c-1e3e33f5936a",
+      "champion": "Cassiopeia",
+      "picks": []
+    },
+    {
+      "id": "6209dc87-c45e-4b62-a14f-55cf1011dd9c",
+      "champion": "Rengar",
+      "picks": []
+    },
+    {
+      "id": "385829f3-9528-4099-ae05-20a79d2b7ed2",
+      "champion": "Ryze",
+      "picks": []
+    },
+    {
+      "id": "8c60944e-665b-4f27-bff2-4bb6a64a7975",
+      "champion": "RekSai",
+      "picks": []
+    },
+    {
+      "id": "b27b8d03-9711-4a23-810b-f64661ff7403",
+      "champion": "Sejuani",
+      "picks": []
+    },
+    {
+      "id": "93e87d08-dbe9-4351-ba67-651870eb2d33",
+      "champion": "Shaco",
+      "picks": []
+    },
+    {
+      "id": "eaf7f325-d750-44e0-b554-51d39d4de0a7",
+      "champion": "Skarner",
+      "picks": []
+    },
+    {
+      "id": "a88c378a-ecf0-4b26-82b9-1cf85b6b10ec",
+      "champion": "Zilean",
+      "picks": []
+    },
+    {
+      "id": "d6abfb94-63e9-41a7-a07c-391cf9d74419",
+      "champion": "Yorick",
+      "picks": []
+    },
+    {
+      "id": "cda1facd-bfba-4f95-8888-bfc6322b9827",
+      "champion": "Yasuo",
+      "picks": []
+    },
+    {
+      "id": "0ca7b355-1327-49c0-9635-444987aca91e",
+      "champion": "Warwick",
+      "picks": []
+    },
+    {
+      "id": "fc4d271a-515d-4eed-b9c3-c6f197b42e7b",
+      "champion": "Viktor",
+      "picks": []
+    },
+    {
+      "id": "d4ac2672-a131-4a1c-b66b-82089dfedaf2",
+      "champion": "MonkeyKing",
+      "picks": []
+    },
+    {
+      "id": "7168385f-4af6-4aae-840a-5d36901f2f58",
+      "champion": "Swain",
+      "picks": []
+    }
+  ]
+}

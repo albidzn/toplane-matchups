@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
 import { createProfileService } from "./profile.js";
 import { createSettings } from "./settings.js";
+import { createLiveGameService } from "./live-game.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -155,6 +156,10 @@ export async function startServer(opts = {}) {
 
   const profileService = createProfileService({ dataDir, getChampions });
 
+  const liveService = process.env.LIVE_MOCK
+    ? await import("./mock-live.js").then((m) => m.createMockLiveGameService({ getChampions }))
+    : createLiveGameService({ dataDir, getChampions });
+
   // ---------- API routes ----------
 
   app.get("/api/matchups", async (_req, res) => {
@@ -219,10 +224,47 @@ export async function startServer(opts = {}) {
     try {
       await settings.update(req.body ?? {});
       profileService.reset();
+      liveService.reset();
       res.json(settings.get());
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
+  });
+
+  // ---------- live game (Champ Select / loading screen / in-game) ----------
+
+  app.get("/api/live/events", (req, res) => {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+    res.write(`data: ${JSON.stringify(liveService.getState())}\n\n`);
+
+    const unsubscribe = liveService.subscribe((state) => {
+      res.write(`data: ${JSON.stringify(state)}\n\n`);
+    });
+    const heartbeat = setInterval(() => res.write(": ping\n\n"), 25000);
+
+    req.on("close", () => {
+      clearInterval(heartbeat);
+      unsubscribe();
+    });
+  });
+
+  app.post("/api/live/champselect-override", (req, res) => {
+    const cellId = Number(req.body?.cellId);
+    if (!Number.isInteger(cellId)) return res.status(400).json({ error: "cellId must be an integer" });
+    liveService.setChampSelectOverride(cellId);
+    res.json({ ok: true });
+  });
+
+  app.post("/api/live/game-override", (req, res) => {
+    const puuid = req.body?.puuid;
+    if (typeof puuid !== "string" || !puuid) return res.status(400).json({ error: "puuid is required" });
+    liveService.setGameOverride(puuid);
+    res.json({ ok: true });
   });
 
   // ---------- static / dev server wiring ----------
@@ -258,13 +300,18 @@ export async function startServer(opts = {}) {
   // warm caches in the background, don't block startup
   getChampions().catch((err) => console.warn("Champion cache warm-up failed:", err.message));
   profileService.getProfile({}).catch((err) => console.warn("Profile warm-up failed:", err.message));
+  liveService.start();
 
   const port = server.address().port;
   return {
     port,
     url: `http://localhost:${port}`,
     dataDir,
-    close: () => new Promise((resolve) => server.close(() => resolve())),
+    close: () =>
+      new Promise((resolve) => {
+        liveService.stop();
+        server.close(() => resolve());
+      }),
   };
 }
 

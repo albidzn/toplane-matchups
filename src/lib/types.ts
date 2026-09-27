@@ -18,6 +18,7 @@ export interface MatchupsData {
 export interface Champion {
   id: string; // Data Dragon ID
   name: string; // Display name
+  key: string; // numeric champion id, as a string (matches Riot's other APIs)
 }
 
 export interface ChampionsResponse {
@@ -130,4 +131,68 @@ export interface SettingsInput {
   riotId?: string;
   platform?: string;
   apiKey?: string;
+}
+
+// ---------- Live game ----------
+
+export type LivePhase = "idle" | "champselect" | "loading" | "in-progress";
+
+export interface ChampSelectSlot {
+  cellId: number;
+  championId: number; // Data Dragon numeric key, or 0 = not locked yet
+  assignedPosition?: string | null;
+  puuid?: string | null;
+}
+
+export interface ChampSelectEnemySlot {
+  cellId: number;
+  championId: number;
+  position: string | null; // guessed lane, e.g. "TOP" — may be null if unconfident
+}
+
+export interface ChampSelectState {
+  localPlayerCellId: number;
+  myTeam: ChampSelectSlot[];
+  enemy: ChampSelectEnemySlot[];
+  bans: { mine: number[]; theirs: number[] };
+}
+
+export interface LiveParticipant {
+  puuid: string;
+  riotId: string | null;
+  teamId: number;
+  championId: string | null; // Data Dragon id, already resolved server-side
+  position: string | null;
+  positionConfirmed: boolean;
+  profileIconId: number;
+  spell1Id: number;
+  spell2Id: number;
+  runeTreeIcon: string | null;
+  runeSubTreeIcon: string | null;
+  rankSolo: { tier: string; rank: string; lp: number; wins: number; losses: number } | null;
+  masteryLevel: number | null;
+  masteryPoints: number | null;
+}
+
+export interface EnemyLaner extends LiveParticipant {
+  recentForm?: boolean[];
+  gamesOnThisChamp?: number;
+  winsOnThisChamp?: number;
+}
+
+export interface LiveGameState {
+  gameId: number;
+  queueId: number;
+  startedAt: number;
+  myTeamId: number;
+  roster: LiveParticipant[];
+  enemyLaner: EnemyLaner | null;
+}
+
+export interface LiveState {
+  phase: LivePhase;
+  lcuConnected: boolean;
+  champSelect: ChampSelectState | null;
+  game: LiveGameState | null;
+  updatedAt: number;
 }

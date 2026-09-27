@@ -93,6 +93,30 @@ your matchup record gets more accurate the longer you use the app.
 Without a `.env`, everything else (matchups, edit mode, My Pool) works exactly
 as before — the Profile tab just shows setup instructions instead.
 
+## Live tab (optional)
+
+The **Live** tab watches your local League client and fills in automatically
+once you reach champ select — no key needed for the client connection itself,
+but the champion/rank/mastery lookups it does use the same Riot API key as
+the Profile tab above.
+
+- **Champ select**: both teams' bans and picks as they lock in, your counter
+  picks and record for whoever's locked in as the enemy top laner, and quick
+  links to op.gg/u.gg/lolalytics.
+- **Loading screen / in-game**: all 10 players with rank, winrate, mastery,
+  runes and summoner spells, with your lane opponent highlighted.
+
+Riot doesn't tell the client who's assigned to which lane on the enemy team,
+so the app *guesses* from the queue's position layout and confirms it against
+the game's own Live Client API a few seconds after the game starts. If the
+guess is ever wrong, click **"top?"** (champ select) or **"This is top"**
+(loading screen) on the right player to fix it — nothing else needs to match.
+
+The app switches to this tab automatically when a game starts and back to
+whatever you had open once it ends. It reads from the League client
+(`https://127.0.0.1:<lockfile port>`) and, briefly, the game process itself
+(`127.0.0.1:2999`) — both local-only, nothing is sent anywhere but Riot's API.
+
 ## Development
 
 ```

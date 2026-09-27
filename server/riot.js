@@ -116,6 +116,16 @@ export function createRiotClient({ apiKey, platform }) {
     return schedule(() => rawFetch(`https://${region}.api.riotgames.com${path}`, apiKey));
   }
 
+  /** Like requestPlatform, but a 404 resolves to null instead of throwing (used where 404 is a normal, expected state). */
+  async function requestPlatformOrNull(path) {
+    try {
+      return await requestPlatform(path);
+    } catch (err) {
+      if (err instanceof RiotApiError && err.status === 404) return null;
+      throw err;
+    }
+  }
+
   return {
     configured: true,
     region,
@@ -137,6 +147,18 @@ export function createRiotClient({ apiKey, platform }) {
 
     getTopMastery(puuid, count = 10) {
       return requestPlatform(`/lol/champion-mastery/v4/champion-masteries/by-puuid/${puuid}/top?count=${count}`);
+    },
+
+    /** null (not an error) when the player has never played this champion. */
+    getMasteryByChampion(puuid, championId) {
+      return requestPlatformOrNull(
+        `/lol/champion-mastery/v4/champion-masteries/by-puuid/${puuid}/by-champion/${championId}`
+      );
+    },
+
+    /** null (not an error) when this summoner isn't currently in a game. */
+    getActiveGameByPuuid(puuid) {
+      return requestPlatformOrNull(`/lol/spectator/v5/active-games/by-summoner/${puuid}`);
     },
 
     getMatchIds(puuid, count) {

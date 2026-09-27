@@ -3,6 +3,19 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.2.0] - 2026-09-27
+
+### Added
+- **Live tab**: a Porofessor-style live game view that connects to your local League client.
+  - **Champ select**: shows both teams' bans and picks as they lock in, guesses which enemy is your lane opponent (from the queue's position-based cell layout), and shows your counter picks, personal win/loss record and quick links (op.gg/u.gg/lolalytics) for whoever's locked in as their top laner — as soon as they lock, before the game even starts.
+  - **Loading screen / in-game**: all 10 players with rank, season winrate, mastery on their champion, runes and summoner spells, refreshed against a highlighted card for your lane opponent (recent form, winrate on that champion).
+  - The enemy top laner is a *guess* until the game's Live Client API confirms real lane assignments a few seconds in — if it's ever wrong, click "top?" / "This is top" on the right player to correct it by hand.
+  - The app switches to Live automatically once you reach champ select, and back to whatever tab you had open once the game ends.
+  - Nothing here needs the Riot API key alone — it also talks to your local League client (read-only) and, briefly, the game process itself (127.0.0.1:2999).
+
+### Changed
+- Champion list now also carries each champion's numeric key (needed to match Riot's live/spectator data to Data Dragon ids).
+
 ## [1.1.0] - 2026-09-27
 
 ### Added

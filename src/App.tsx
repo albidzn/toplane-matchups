@@ -4,6 +4,7 @@ import type { Champion } from "./lib/types";
 import { useMatchups } from "./hooks/useMatchups";
 import { useProfile, type WinLoss } from "./hooks/useProfile";
 import { useStickyState } from "./hooks/useStickyState";
+import { useLiveGame } from "./hooks/useLiveGame";
 import SearchBar, { type SearchBarHandle } from "./components/SearchBar";
 import EnemyGrid from "./components/EnemyGrid";
 import MatchupDetail from "./components/MatchupDetail";
@@ -13,8 +14,9 @@ import ProfileView from "./components/profile/ProfileView";
 import ProfileChip from "./components/profile/ProfileChip";
 import SettingsModal from "./components/SettingsModal";
 import UpdateBanner from "./components/UpdateBanner";
+import LiveView from "./components/live/LiveView";
 
-type Tab = "matchups" | "pool" | "profile";
+type Tab = "matchups" | "pool" | "profile" | "live";
 
 export default function App() {
   const {
@@ -34,6 +36,8 @@ export default function App() {
   const { profile, loading: profileLoading, refreshing: profileRefreshing, refresh: refreshProfile, recordsByEnemy } =
     useProfile();
 
+  const live = useLiveGame();
+
   const [champions, setChampions] = useState<Champion[]>([]);
   const [ddragonVersion, setDdragonVersion] = useState<string | null>(null);
   const [champError, setChampError] = useState<string | null>(null);
@@ -44,6 +48,23 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const searchRef = useRef<SearchBarHandle>(null);
+  const preLiveTab = useRef<Tab>("matchups");
+  const wasLive = useRef(false);
+
+  // Auto-jump to the Live tab as soon as a game starts, and back to whatever
+  // tab was open before once it ends (only if the user is still on Live —
+  // don't yank them away if they'd already navigated elsewhere themselves).
+  useEffect(() => {
+    const isLive = live.phase !== "idle";
+    if (isLive && !wasLive.current) {
+      preLiveTab.current = tab === "live" ? "matchups" : tab;
+      setTab("live");
+    } else if (!isLive && wasLive.current) {
+      setTab((current) => (current === "live" ? preLiveTab.current : current));
+    }
+    wasLive.current = isLive;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live.phase]);
 
   useEffect(() => {
     fetchChampions()
@@ -152,21 +173,30 @@ export default function App() {
         />
 
         <nav className="flex items-center gap-1 rounded-lg border border-ink-700 bg-ink-850 p-1">
-          {(["matchups", "pool", "profile"] as Tab[]).map((t) => (
+          {(["matchups", "pool", "profile", "live"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-md px-2 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all duration-150 active:scale-95 min-[900px]:px-3 ${
+              className={`relative rounded-md px-2 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all duration-150 active:scale-95 min-[900px]:px-3 ${
                 tab === t ? "bg-gold-500/20 text-gold-400" : "text-slate-500 hover:text-slate-300"
               }`}
             >
-              {t === "matchups" ? "Matchups" : t === "pool" ? (
+              {t === "matchups" ? (
+                "Matchups"
+              ) : t === "pool" ? (
                 <>
                   <span className="min-[900px]:hidden">Pool</span>
                   <span className="hidden min-[900px]:inline">My Pool</span>
                 </>
-              ) : (
+              ) : t === "profile" ? (
                 "Profile"
+              ) : (
+                <>
+                  Live
+                  {live.phase !== "idle" && tab !== "live" && (
+                    <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  )}
+                </>
               )}
             </button>
           ))}
@@ -227,7 +257,17 @@ export default function App() {
 
       {/* Body */}
       <main className="min-h-0 flex-1">
-        {tab === "pool" ? (
+        {tab === "live" ? (
+          <LiveView
+            key="live"
+            live={live}
+            champions={champions}
+            ddragonVersion={ddragonVersion}
+            enemies={data.enemies}
+            recordsByEnemy={recordsByEnemy}
+            onQuickAdd={addEnemy}
+          />
+        ) : tab === "pool" ? (
           <PoolView
             key="pool"
             pool={pool}

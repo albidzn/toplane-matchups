@@ -1,4 +1,4 @@
-import type { ChampionsResponse, MatchupsData, Profile, Settings, SettingsInput } from "./types";
+import type { ChampionsResponse, LiveState, MatchupsData, Profile, Settings, SettingsInput } from "./types";
 
 export async function fetchMatchups(): Promise<MatchupsData> {
   const res = await fetch("/api/matchups");
@@ -45,4 +45,33 @@ export async function saveSettings(input: SettingsInput): Promise<Settings> {
   const body = await res.json();
   if (!res.ok) throw new Error(body.error ?? "Failed to save settings");
   return body;
+}
+
+/** Subscribes to live game state (champ select / loading / in-game) via SSE. Returns an unsubscribe function. */
+export function subscribeLive(onState: (state: LiveState) => void): () => void {
+  const source = new EventSource("/api/live/events");
+  source.onmessage = (event) => {
+    try {
+      onState(JSON.parse(event.data));
+    } catch {
+      // ignore malformed/heartbeat frames
+    }
+  };
+  return () => source.close();
+}
+
+export async function overrideChampSelectEnemyLaner(cellId: number): Promise<void> {
+  await fetch("/api/live/champselect-override", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cellId }),
+  });
+}
+
+export async function overrideGameEnemyLaner(puuid: string): Promise<void> {
+  await fetch("/api/live/game-override", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ puuid }),
+  });
 }

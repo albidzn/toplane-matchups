@@ -57,6 +57,7 @@ export function createMockLiveGameService({ getChampions }) {
         myTeam: MY_TEAM_CHAMPS.map((id, i) => ({
           cellId: i,
           championId: 0,
+          championPickIntent: 0,
           assignedPosition: POSITIONS[i].toLowerCase(),
           puuid: `mock-me-${i}`,
         })),
@@ -73,6 +74,17 @@ export function createMockLiveGameService({ getChampions }) {
             mine: BAN_POOL.slice(0, 3).map(keyOf),
             theirs: BAN_POOL.slice(3, 5).map(keyOf),
           },
+        },
+      })
+    );
+
+    // The local player (cellId 0) previews a couple of champions before locking,
+    // so the "your champion" stat card in champ select has something to react to early.
+    after(2200, () =>
+      setState({
+        champSelect: {
+          ...state.champSelect,
+          myTeam: state.champSelect.myTeam.map((p, pi) => (pi === 0 ? { ...p, championPickIntent: keyOf("Ambessa") } : p)),
         },
       })
     );
@@ -137,7 +149,7 @@ export function createMockLiveGameService({ getChampions }) {
       setState({
         phase: "loading",
         champSelect: null,
-        game: { gameId: 1, queueId: 420, startedAt: Date.now(), myTeamId: 100, roster, enemyLaner },
+        game: { gameId: 1, queueId: 420, startedAt: Date.now(), myTeamId: 100, myPuuid: "mock-me-0", roster, enemyLaner },
       });
     });
 

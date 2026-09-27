@@ -1,4 +1,4 @@
-import type { Champion, Enemy, LiveState } from "../../lib/types";
+import type { Champion, Enemy, LiveState, Profile } from "../../lib/types";
 import type { WinLoss } from "../../hooks/useProfile";
 import { overrideChampSelectEnemyLaner, overrideGameEnemyLaner } from "../../lib/api";
 import ChampSelectView from "./ChampSelectView";
@@ -11,6 +11,7 @@ interface LiveViewProps {
   ddragonVersion: string | null;
   enemies: Enemy[];
   recordsByEnemy: Map<string, Map<string, WinLoss>>;
+  profile: Profile | null;
   onQuickAdd: (championId: string) => void;
   onSaveNote: (enemyId: string, championId: string, note: string) => void;
 }
@@ -21,6 +22,7 @@ export default function LiveView({
   ddragonVersion,
   enemies,
   recordsByEnemy,
+  profile,
   onQuickAdd,
   onSaveNote,
 }: LiveViewProps) {
@@ -43,6 +45,7 @@ export default function LiveView({
         ddragonVersion={ddragonVersion}
         enemies={enemies}
         recordsByEnemy={recordsByEnemy}
+        profile={profile}
         onOverride={(cellId) => overrideChampSelectEnemyLaner(cellId)}
         onQuickAdd={onQuickAdd}
       />

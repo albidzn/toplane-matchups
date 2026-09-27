@@ -140,6 +140,7 @@ export type LivePhase = "idle" | "champselect" | "loading" | "in-progress" | "po
 export interface ChampSelectSlot {
   cellId: number;
   championId: number; // Data Dragon numeric key, or 0 = not locked yet
+  championPickIntent: number; // hovered/previewed pick before locking in, or 0 = none
   assignedPosition?: string | null;
   puuid?: string | null;
 }
@@ -193,6 +194,7 @@ export interface LiveGameState {
   queueId: number;
   startedAt: number;
   myTeamId: number;
+  myPuuid: string | null;
   roster: LiveParticipant[];
   enemyLaner: EnemyLaner | null;
   /** "Win"/"Lose" once the Live Client API's event log reports it (may arrive before the phase itself flips to postgame), else null. */

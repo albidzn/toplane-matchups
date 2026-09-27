@@ -1,8 +1,9 @@
-import type { Champion, ChampSelectState, Enemy } from "../../lib/types";
+import type { Champion, ChampSelectState, Enemy, Profile } from "../../lib/types";
 import type { WinLoss } from "../../hooks/useProfile";
-import { positionLabel } from "../../lib/live";
+import { comparePositions, positionLabel } from "../../lib/live";
 import ChampIcon from "../ChampIcon";
 import EnemyLanerCard from "./EnemyLanerCard";
+import MyChampionCard from "./MyChampionCard";
 
 interface ChampSelectViewProps {
   champSelect: ChampSelectState;
@@ -10,6 +11,7 @@ interface ChampSelectViewProps {
   ddragonVersion: string | null;
   enemies: Enemy[];
   recordsByEnemy: Map<string, Map<string, WinLoss>>;
+  profile: Profile | null;
   onOverride: (cellId: number) => void;
   onQuickAdd: (championId: string) => void;
 }
@@ -25,6 +27,7 @@ export default function ChampSelectView({
   ddragonVersion,
   enemies,
   recordsByEnemy,
+  profile,
   onOverride,
   onQuickAdd,
 }: ChampSelectViewProps) {
@@ -33,14 +36,15 @@ export default function ChampSelectView({
     return id ? champions.find((c) => c.id === id)?.name ?? id : null;
   };
 
-  const myTop = [...champSelect.myTeam].sort(
-    (a, b) => (a.assignedPosition === "top" ? -1 : 0) - (b.assignedPosition === "top" ? -1 : 0)
-  );
+  const myTeamSorted = [...champSelect.myTeam].sort((a, b) => comparePositions(a.assignedPosition, b.assignedPosition));
   const enemyTopCell = champSelect.enemy.find((c) => c.position === "TOP" && c.championId !== 0);
   const enemyTopChampId = enemyTopCell ? champIdOf(champions, enemyTopCell.championId) : null;
   const myTopChampId = champIdOf(champions, champSelect.myTeam.find((p) => p.assignedPosition === "top")?.championId ?? 0);
   const matchingEnemy = enemyTopChampId ? enemies.find((e) => e.champion === enemyTopChampId) ?? null : null;
   const recordsForEnemy = enemyTopChampId ? recordsByEnemy.get(enemyTopChampId) : undefined;
+
+  const me = champSelect.myTeam.find((p) => p.cellId === champSelect.localPlayerCellId) ?? null;
+  const myEffectiveChampId = me ? champIdOf(champions, me.championId || me.championPickIntent) : null;
 
   return (
     <div className="scrollbar-thin h-full animate-fade-in space-y-4 overflow-y-auto pr-1">
@@ -57,30 +61,51 @@ export default function ChampSelectView({
         </div>
       )}
 
+      {myEffectiveChampId && me && (
+        <MyChampionCard
+          championId={myEffectiveChampId}
+          locked={me.championId > 0}
+          champions={champions}
+          ddragonVersion={ddragonVersion}
+          profile={profile}
+        />
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-hextech-500/20 bg-ink-900/40 p-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-hextech-400">Your team</div>
           <div className="space-y-1.5">
-            {myTop.map((p) => (
-              <div key={p.cellId} className="flex items-center gap-2">
-                <span className="w-14 shrink-0 text-[10px] uppercase text-slate-500">
-                  {positionLabel(p.assignedPosition ?? undefined)}
-                </span>
-                <ChampIcon
-                  ddragonVersion={ddragonVersion}
-                  championId={champIdOf(champions, p.championId) ?? "?"}
-                  size={28}
-                />
-                <span className="truncate text-xs text-slate-300">{nameOf(p.championId) ?? "…"}</span>
-              </div>
-            ))}
+            {myTeamSorted.map((p) => {
+              const isMe = p.cellId === champSelect.localPlayerCellId;
+              const effectiveKey = p.championId || p.championPickIntent;
+              const previewing = !p.championId && p.championPickIntent > 0;
+              return (
+                <div key={p.cellId} className="flex items-center gap-2">
+                  <span className="w-14 shrink-0 text-[10px] uppercase text-slate-500">
+                    {positionLabel(p.assignedPosition ?? undefined)}
+                  </span>
+                  <ChampIcon
+                    ddragonVersion={ddragonVersion}
+                    championId={champIdOf(champions, effectiveKey) ?? "?"}
+                    size={28}
+                    className={previewing ? "opacity-60" : undefined}
+                  />
+                  <span className={`truncate text-xs ${previewing ? "italic text-slate-500" : "text-slate-300"}`}>
+                    {nameOf(effectiveKey) ?? "…"}
+                  </span>
+                  {isMe && (
+                    <span className="shrink-0 text-[9px] font-semibold uppercase text-hextech-400">You</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="rounded-xl border border-red-500/15 bg-ink-900/40 p-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-400/80">Enemy team</div>
           <div className="space-y-1.5">
-            {champSelect.enemy.map((c) => (
+            {[...champSelect.enemy].sort((a, b) => comparePositions(a.position, b.position)).map((c) => (
               <div key={c.cellId} className="flex items-center gap-2">
                 <span className="w-14 shrink-0 text-[10px] uppercase text-slate-500">
                   {positionLabel(c.position) || "?"}

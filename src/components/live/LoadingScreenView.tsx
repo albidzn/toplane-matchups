@@ -1,5 +1,6 @@
 import type { Champion, Enemy, LiveGameState } from "../../lib/types";
 import type { WinLoss } from "../../hooks/useProfile";
+import { comparePositions } from "../../lib/live";
 import RosterRow from "./RosterRow";
 import EnemyLanerCard from "./EnemyLanerCard";
 
@@ -28,8 +29,8 @@ export default function LoadingScreenView({
   onOverride,
   onQuickAdd,
 }: LoadingScreenViewProps) {
-  const myTeam = game.roster.filter((p) => p.teamId === game.myTeamId);
-  const enemyTeam = game.roster.filter((p) => p.teamId !== game.myTeamId);
+  const myTeam = game.roster.filter((p) => p.teamId === game.myTeamId).sort((a, b) => comparePositions(a.position, b.position));
+  const enemyTeam = game.roster.filter((p) => p.teamId !== game.myTeamId).sort((a, b) => comparePositions(a.position, b.position));
   const myTop = myTeam.find((p) => p.position === "TOP");
 
   const enemyChampId = game.enemyLaner?.championId ?? null;
@@ -63,7 +64,13 @@ export default function LoadingScreenView({
         </div>
         <div className="space-y-0.5">
           {myTeam.map((p) => (
-            <RosterRow key={p.puuid} participant={p} champions={champions} ddragonVersion={ddragonVersion} isMe />
+            <RosterRow
+              key={p.puuid}
+              participant={p}
+              champions={champions}
+              ddragonVersion={ddragonVersion}
+              isMe={p.puuid === game.myPuuid}
+            />
           ))}
         </div>
         <div className="my-2 border-t border-ink-800" />

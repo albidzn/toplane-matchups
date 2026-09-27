@@ -199,6 +199,7 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
         queueId: spectatorGame.gameQueueConfigId,
         startedAt: spectatorGame.gameStartTime,
         myTeamId,
+        myPuuid,
         roster,
         enemyLaner,
       },
@@ -280,6 +281,7 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
               myTeam: session.myTeam.map((p) => ({
                 cellId: p.cellId,
                 championId: p.championId,
+                championPickIntent: p.championPickIntent ?? 0,
                 assignedPosition: p.assignedPosition || null,
                 puuid: p.puuid || null,
               })),

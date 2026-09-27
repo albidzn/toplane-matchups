@@ -266,6 +266,7 @@ export default function App() {
             ddragonVersion={ddragonVersion}
             enemies={data.enemies}
             recordsByEnemy={recordsByEnemy}
+            profile={profile}
             onQuickAdd={addEnemy}
             onSaveNote={upsertPickNote}
           />

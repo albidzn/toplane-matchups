@@ -31,7 +31,20 @@ const POSITION_LABEL: Record<string, string> = {
 
 export function positionLabel(position: string | null | undefined): string {
   if (!position) return "";
-  return POSITION_LABEL[position] ?? position;
+  return POSITION_LABEL[position.toUpperCase()] ?? position;
+}
+
+// Standard in-client role order, top to bottom.
+const POSITION_ORDER: Record<string, number> = { TOP: 0, JUNGLE: 1, MIDDLE: 2, BOTTOM: 3, UTILITY: 4 };
+
+function positionRank(position: string | null | undefined): number {
+  if (!position) return 5;
+  return POSITION_ORDER[position.toUpperCase()] ?? 5;
+}
+
+/** Sorts by standard role order (Top, Jungle, Mid, Bot, Support), unknown/unassigned last. */
+export function comparePositions(a: string | null | undefined, b: string | null | undefined): number {
+  return positionRank(a) - positionRank(b);
 }
 
 /** Best-effort slug — matches op.gg/u.gg/lolalytics for the vast majority of champions. */

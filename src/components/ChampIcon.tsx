@@ -26,9 +26,23 @@ export default function ChampIcon({
 }: ChampIconProps) {
   const [errored, setErrored] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  // The Live tab reuses the same ChampIcon slot (by cellId/position) as a
+  // champion locks in, so `championId` can change well after first mount —
+  // e.g. from a not-yet-locked placeholder that 404s to a real champion.
+  // Reset the load/error state whenever the actual image target changes,
+  // instead of getting stuck on a stale error from an earlier id.
+  const src = ddragonVersion ? championIconUrl(ddragonVersion, championId) : null;
+  const [trackedSrc, setTrackedSrc] = useState(src);
+  if (src !== trackedSrc) {
+    setTrackedSrc(src);
+    setErrored(false);
+    setLoaded(false);
+  }
+
   const label = name ?? championId;
   const initial = label.charAt(0).toUpperCase();
-  const showImg = Boolean(ddragonVersion) && !errored;
+  const showImg = Boolean(src) && !errored;
 
   return (
     <div
@@ -46,7 +60,7 @@ export default function ChampIcon({
       </div>
       {showImg && (
         <img
-          src={championIconUrl(ddragonVersion!, championId)}
+          src={src!}
           alt={label}
           loading="lazy"
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"}`}

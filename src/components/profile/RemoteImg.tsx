@@ -12,6 +12,16 @@ export default function RemoteImg({ src, alt, className = "", fallback = null }:
   const [errored, setErrored] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // Reset if a component instance gets reused for a different `src` later
+  // (e.g. the same list slot showing a different player/champion over
+  // time) — otherwise a stale error/loaded flag from the old src sticks.
+  const [trackedSrc, setTrackedSrc] = useState(src);
+  if (src !== trackedSrc) {
+    setTrackedSrc(src);
+    setErrored(false);
+    setLoaded(false);
+  }
+
   if (errored) return <>{fallback}</>;
 
   // No fallback to show underneath — keep the old (simpler) behaviour.

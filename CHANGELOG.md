@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.2.2] - 2026-09-27
+
+### Fixed
+- On the Live tab, a champion icon that started out unresolved (not locked in yet) stayed stuck on its letter placeholder forever once the real champion locked in — it only fixed itself after switching tabs away and back. `ChampIcon` (and `RemoteImg`) now reset their loaded/error state whenever the image they're pointed at actually changes, instead of getting stuck on a stale result from an earlier placeholder.
+
 ## [1.2.1] - 2026-09-27
 
 ### Fixed

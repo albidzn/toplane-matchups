@@ -96,6 +96,15 @@
     },
     "portable": {
       "artifactName": "Toplane-Matchups-${version}-portable.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "albidzn",
+      "repo": "toplane-matchups"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/albidzn/toplane-matchups.git"
   }
 }

@@ -9,7 +9,7 @@ everything in place. Meant to run on a second monitor next to the game.
 ## Get the app (Windows)
 
 Download the latest release from the
-[Releases page](https://github.com/OWNER/REPO/releases/latest):
+[Releases page](https://github.com/albidzn/toplane-matchups/releases/latest):
 
 - **Setup.exe** — installer with a Start menu / desktop shortcut. Updates
   itself automatically from then on (checks on launch and every 4h; when a

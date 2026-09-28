@@ -253,7 +253,15 @@ export default function App() {
         </div>
       </header>
 
-      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} onSaved={refreshProfile} />}
+      {settingsOpen && (
+        <SettingsModal
+          onClose={() => setSettingsOpen(false)}
+          onSaved={() => {
+            refreshProfile();
+            refreshArena();
+          }}
+        />
+      )}
 
       {champError && (
         <div className="mb-3 animate-fade-slide-up rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">

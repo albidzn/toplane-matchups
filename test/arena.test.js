@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { isArenaMatch, buildArenaMatchEntry, aggregateArenaStats, arenaQueueIdsFromLcuQueues } from "../server/arena.js";
+import {
+  isArenaMatch,
+  buildArenaMatchEntry,
+  aggregateArenaStats,
+  arenaQueueIdsFromLcuQueues,
+  filterBySeasonStart,
+} from "../server/arena.js";
 
 const champions = [
   { id: "Sett", name: "Sett", key: "875" },
@@ -72,6 +78,24 @@ describe("arenaQueueIdsFromLcuQueues", () => {
 
   it("is case-insensitive on gameMode and skips entries without a numeric id", () => {
     expect(arenaQueueIdsFromLcuQueues([{ id: 1750, gameMode: "cherry" }, { gameMode: "CHERRY" }])).toEqual([1750]);
+  });
+});
+
+describe("filterBySeasonStart", () => {
+  const entries = [
+    { champion: "Sett", win: true, gameEnd: 1000 },
+    { champion: "Ahri", win: true, gameEnd: 2000 },
+    { champion: "Garen", win: false, gameEnd: 3000 },
+  ];
+
+  it("keeps only entries at or after the cutoff", () => {
+    expect(filterBySeasonStart(entries, 2000)).toEqual([entries[1], entries[2]]);
+  });
+
+  it("returns everything unfiltered when there's no cutoff", () => {
+    expect(filterBySeasonStart(entries, null)).toBe(entries);
+    expect(filterBySeasonStart(entries, undefined)).toBe(entries);
+    expect(filterBySeasonStart(entries, 0)).toBe(entries);
   });
 });
 

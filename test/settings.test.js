@@ -11,6 +11,7 @@ beforeEach(() => {
   delete process.env.RIOT_API_KEY;
   delete process.env.RIOT_ID;
   delete process.env.RIOT_PLATFORM;
+  delete process.env.ARENA_SEASON_START;
 });
 
 afterEach(() => {
@@ -43,6 +44,7 @@ describe("createSettings", () => {
       platform: "euw1",
       hasKey: true,
       platforms: expect.any(Array),
+      arenaSeasonStart: "",
     });
     expect(JSON.stringify(state)).not.toContain("RGAPI");
   });
@@ -65,5 +67,19 @@ describe("createSettings", () => {
     await settings.update({ apiKey: "RGAPI-" + "0".repeat(30), riotId: "Albi#113", platform: "euw1" });
     await settings.update({ platform: "na1" });
     expect(settings.get()).toMatchObject({ hasKey: true, platform: "na1" });
+  });
+
+  it("rejects an unparseable Arena season start date", async () => {
+    const settings = createSettings(dir);
+    await expect(settings.update({ arenaSeasonStart: "not-a-date" })).rejects.toThrow(/valid date/);
+  });
+
+  it("saves and clears the Arena season start date", async () => {
+    const settings = createSettings(dir);
+    await settings.update({ arenaSeasonStart: "2026-08-01" });
+    expect(settings.get().arenaSeasonStart).toBe("2026-08-01");
+
+    await settings.update({ arenaSeasonStart: "" });
+    expect(settings.get().arenaSeasonStart).toBe("");
   });
 });

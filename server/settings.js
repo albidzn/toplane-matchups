@@ -20,6 +20,10 @@ export function createSettings(dataDir) {
     if (saved.apiKey) process.env.RIOT_API_KEY = saved.apiKey;
     if (saved.riotId) process.env.RIOT_ID = saved.riotId;
     if (saved.platform) process.env.RIOT_PLATFORM = saved.platform;
+    // Arena has no season-boundary field in its match/LCU data, so this is opt-in and manual —
+    // when unset, the Arena tab counts wins across the whole account history instead.
+    if (saved.arenaSeasonStart) process.env.ARENA_SEASON_START = saved.arenaSeasonStart;
+    else delete process.env.ARENA_SEASON_START;
   }
 
   function readSaved() {
@@ -40,6 +44,7 @@ export function createSettings(dataDir) {
       platform: process.env.RIOT_PLATFORM || "euw1",
       hasKey: Boolean(process.env.RIOT_API_KEY),
       platforms: PLATFORMS,
+      arenaSeasonStart: process.env.ARENA_SEASON_START ?? "",
     };
   }
 
@@ -66,6 +71,14 @@ export function createSettings(dataDir) {
     if (typeof input.platform === "string" && input.platform) {
       if (!PLATFORMS.includes(input.platform)) throw new Error("Unknown platform.");
       next.platform = input.platform;
+    }
+
+    if (typeof input.arenaSeasonStart === "string") {
+      const trimmed = input.arenaSeasonStart.trim();
+      if (trimmed && Number.isNaN(Date.parse(trimmed))) {
+        throw new Error("Arena season start must be a valid date.");
+      }
+      next.arenaSeasonStart = trimmed; // "" clears it, filtering back to all-time
     }
 
     await fs.mkdir(dataDir, { recursive: true });

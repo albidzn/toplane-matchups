@@ -40,6 +40,16 @@ export function buildArenaMatchEntry(match, puuid, champions) {
   };
 }
 
+/**
+ * Arena has no season-boundary field in its match or LCU data, so "this season only" (matching
+ * the in-game Arena Season Journey) can only be applied as a manual cutoff date the user sets
+ * themselves in Settings — `seasonStartMs` is that cutoff, or null/undefined for all-time.
+ */
+export function filterBySeasonStart(entries, seasonStartMs) {
+  if (!seasonStartMs) return entries;
+  return entries.filter((e) => e.gameEnd >= seasonStartMs);
+}
+
 /** One row per champion played, most games first. */
 export function aggregateArenaStats(entries) {
   const byChamp = new Map();

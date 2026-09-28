@@ -18,6 +18,7 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
   const [riotId, setRiotId] = useState("");
   const [platform, setPlatform] = useState("euw1");
   const [apiKey, setApiKey] = useState("");
+  const [arenaSeasonStart, setArenaSeasonStart] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
         setSettings(s);
         setRiotId(s.riotId);
         setPlatform(s.platform);
+        setArenaSeasonStart(s.arenaSeasonStart);
       })
       .catch(() => setError("Could not load settings."));
     desktop?.getInfo().then(setInfo).catch(() => {});
@@ -54,7 +56,7 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
     setError(null);
     setSaved(false);
     try {
-      const next = await saveSettings({ riotId, platform, apiKey });
+      const next = await saveSettings({ riotId, platform, apiKey, arenaSeasonStart });
       setSettings(next);
       setApiKey("");
       setSaved(true);
@@ -148,6 +150,20 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
             </div>
             <span className="mt-1 block text-[11px] text-slate-600">
               Get one at developer.riotgames.com. It stays on this computer and is never shown again.
+            </span>
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-xs text-slate-400">Arena season start (optional)</span>
+            <input
+              type="date"
+              value={arenaSeasonStart}
+              onChange={(e) => setArenaSeasonStart(e.target.value)}
+              className={inputClass}
+            />
+            <span className="mt-1 block text-[11px] text-slate-600">
+              The Arena tab counts wins from this date on instead of your whole account history — set
+              it to match the in-game Arena Season Journey's start. Leave empty to count all-time.
             </span>
           </label>
 

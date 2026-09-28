@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.14.0] - 2026-09-29
+
+### Added
+- **Arena season start** setting: an optional date in Settings that makes the Arena tab count wins from that date on instead of your whole account history, to match the in-game Arena Season Journey. Arena carries no season-boundary field in Riot's match or client data, so this has to be set by hand — find the date the current season started and enter it once. Left empty, it counts all-time.
+
 ## [1.13.3] - 2026-09-28
 
 ### Fixed

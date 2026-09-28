@@ -40,5 +40,5 @@ export function buildMockArena(mode) {
     return { champion, games, wins };
   }).filter((s) => s.games > 0);
 
-  return { configured: true, updatedAt, stats, backfillComplete: true };
+  return { configured: true, updatedAt, stats, backfillComplete: true, seasonStart: process.env.ARENA_SEASON_START || null };
 }

@@ -70,7 +70,11 @@ export default function ArenaView({
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg font-bold text-slate-100">Arena wins</h2>
           <div className="text-xs text-slate-500">
-            {arena.backfillComplete === false ? "Still scanning your full match history…" : "Every champion you've won at least once with"}
+            {arena.backfillComplete === false
+              ? "Still scanning your full match history…"
+              : arena.seasonStart
+                ? `1st-place wins since ${new Date(arena.seasonStart).toLocaleDateString()} (matches the Arena Season Journey)`
+                : "Every champion you've won 1st place with, all-time — set a season start in Settings to match the in-game Season Journey"}
           </div>
         </div>
 

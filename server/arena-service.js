@@ -2,7 +2,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
 import { createLcuConnector } from "./lcu.js";
-import { STATIC_ARENA_QUEUE_IDS, arenaQueueIdsFromLcuQueues, buildArenaMatchEntry, aggregateArenaStats } from "./arena.js";
+import {
+  STATIC_ARENA_QUEUE_IDS,
+  arenaQueueIdsFromLcuQueues,
+  buildArenaMatchEntry,
+  filterBySeasonStart,
+  aggregateArenaStats,
+} from "./arena.js";
 
 const TTL_MS = 2 * 60 * 1000;
 const DISCOVERY_COUNT = 20; // recent ids checked every refresh, so a just-finished game shows up fast
@@ -159,10 +165,18 @@ export function createArenaService({ dataDir, getChampions }) {
 
       await saveCache(cache);
 
-      const stats = aggregateArenaStats(Object.values(cache.entries).filter((e) => !e.skip));
+      const seasonStartMs = process.env.ARENA_SEASON_START ? Date.parse(process.env.ARENA_SEASON_START) : null;
+      const realEntries = Object.values(cache.entries).filter((e) => !e.skip);
+      const stats = aggregateArenaStats(filterBySeasonStart(realEntries, seasonStartMs));
       const backfillComplete = arenaQueueIds.every((q) => cache.scan[q]?.done) && cache.pendingIds.length === 0;
 
-      const result = { configured: true, updatedAt: Date.now(), stats, backfillComplete };
+      const result = {
+        configured: true,
+        updatedAt: Date.now(),
+        stats,
+        backfillComplete,
+        seasonStart: process.env.ARENA_SEASON_START || null,
+      };
       memArena = result;
       memFetchedAt = Date.now();
       return result;

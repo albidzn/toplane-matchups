@@ -163,12 +163,15 @@ export interface Settings {
   /** Whether an API key is saved. The key itself is never sent to the browser. */
   hasKey: boolean;
   platforms: string[];
+  /** ISO date string; when set, the Arena tab only counts wins from this date on ("this season" instead of all-time). */
+  arenaSeasonStart: string;
 }
 
 export interface SettingsInput {
   riotId?: string;
   platform?: string;
   apiKey?: string;
+  arenaSeasonStart?: string;
 }
 
 // ---------- Live game ----------
@@ -264,4 +267,6 @@ export interface Arena {
   stats?: ArenaChampionStat[];
   /** False while the one-time full history scan is still catching up (early refreshes after first use). */
   backfillComplete?: boolean;
+  /** The cutoff date applied to `stats`, if any was set in Settings — null means all-time. */
+  seasonStart?: string | null;
 }

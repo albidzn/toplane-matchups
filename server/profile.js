@@ -192,6 +192,7 @@ export function createProfileService({ dataDir, getChampions }) {
         lpHistory,
         mastery,
         recent: combined.slice(0, 20),
+        history: combined.slice(0, 60),
         form,
         championStats,
         matchups,

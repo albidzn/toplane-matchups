@@ -111,7 +111,7 @@ export default function ProfileView({
 
       <div className="space-y-4 pb-2">
         <SummaryCard recent={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
-        <MatchList matches={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
+        <MatchList matches={profile.history ?? profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
         <ChampionStats
           championStats={profile.championStats ?? []}
           mastery={profile.mastery ?? []}

@@ -47,6 +47,7 @@ function buildMockLpHistory(rand, entry) {
 function buildMockMatches(rand, count) {
   const matches = [];
   const now = Date.now();
+  let offsetMs = 20 * 60 * 1000;
   for (let i = 0; i < count; i++) {
     const champion = POOL[Math.floor(rand() * POOL.length)];
     const opponentChamp = ENEMIES[Math.floor(rand() * ENEMIES.length)];
@@ -60,7 +61,7 @@ function buildMockMatches(rand, count) {
     matches.push({
       matchId: `MOCK_${i}`,
       queueId: 420,
-      gameEnd: now - i * (3600 * 1000 * (3 + rand() * 20)),
+      gameEnd: now - offsetMs,
       durationSec: remake ? 220 : durationSec,
       champion,
       position: "TOP",
@@ -75,6 +76,8 @@ function buildMockMatches(rand, count) {
       opponent: { champion: opponentChamp },
       remake,
     });
+    // games come in sessions of ~4, ~50min apart, with long breaks in between
+    offsetMs += i % 4 === 3 ? (8 + rand() * 14) * 3600 * 1000 : (50 + rand() * 15) * 60 * 1000;
   }
   return matches;
 }
@@ -134,6 +137,7 @@ export function buildMockProfile(mode) {
       points: Math.floor(180000 / (i + 1)),
     })),
     recent: matches.slice(0, 20),
+    history: matches,
     form,
     championStats,
     matchups,

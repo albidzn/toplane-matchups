@@ -46,6 +46,12 @@ export function formatDuration(sec: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+export function formatPlaytime(sec: number): string {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
 export function formatRelativeTime(epochMs: number): string {
   const diffSec = Math.max(0, (Date.now() - epochMs) / 1000);
   if (diffSec < 60) return "just now";

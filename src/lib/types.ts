@@ -120,6 +120,8 @@ export interface Profile {
   lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[] };
   mastery?: MasteryEntry[];
   recent?: MatchSummary[];
+  /** Longer, newest-first match list used for the session-grouped history. */
+  history?: MatchSummary[];
   form?: FormSummary;
   championStats?: ChampionStat[];
   matchups?: MatchupRecord[];

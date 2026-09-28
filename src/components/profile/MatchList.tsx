@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import type { Champion, MatchSummary } from "../../lib/types";
 import { itemIconUrl } from "../../lib/champions";
-import { formatDuration, formatRelativeTime, kdaRatio } from "../../lib/profile";
+import { formatDuration, formatPlaytime, formatRelativeTime, kdaRatio, winrate } from "../../lib/profile";
+import { groupSessions } from "../../lib/sessions";
 import { positionLabel } from "../../lib/live";
 import ChampIcon from "../ChampIcon";
 
@@ -12,6 +14,7 @@ interface MatchListProps {
 
 export default function MatchList({ matches, champions, ddragonVersion }: MatchListProps) {
   const nameOf = (id: string) => champions.find((c) => c.id === id)?.name ?? id;
+  const sessions = useMemo(() => groupSessions(matches), [matches]);
 
   return (
     <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-4 [animation-delay:100ms]">
@@ -24,8 +27,30 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
           No games recorded yet.
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {matches.map((m, i) => (
+        <div className="space-y-4">
+          {sessions.map((session) => (
+            <section key={session.matches[0].matchId}>
+              <div className="mb-1.5 flex flex-wrap items-center gap-x-2 px-1 text-xs text-slate-500">
+                <span className="font-medium text-slate-300">{formatRelativeTime(session.endedAt)}</span>
+                {session.games > 0 && (
+                  <>
+                    <span>· {session.games} {session.games === 1 ? "game" : "games"}</span>
+                    <span>· {session.wins}W {session.losses}L</span>
+                    <span
+                      className={
+                        winrate(session.wins, session.losses) >= 50
+                          ? "font-semibold text-emerald-400"
+                          : "font-semibold text-red-400"
+                      }
+                    >
+                      · {winrate(session.wins, session.losses)}%
+                    </span>
+                  </>
+                )}
+                <span>· {formatPlaytime(session.playTimeSec)}</span>
+              </div>
+              <div className="space-y-1.5">
+          {session.matches.map((m, i) => (
             <div
               key={m.matchId}
               style={{ animationDelay: `${Math.min(i, 10) * 25}ms` }}
@@ -89,6 +114,9 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
                 <div>{m.remake ? "Remake" : formatRelativeTime(m.gameEnd)}</div>
               </div>
             </div>
+          ))}
+              </div>
+            </section>
           ))}
         </div>
       )}

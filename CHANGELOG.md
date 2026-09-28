@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.7.0] - 2026-09-28
+
+### Added
+- **Match history grouped into sessions**: games played back to back (less than an hour between one ending and the next starting) are grouped under a header with when the session ended, games played, W/L, winrate and total play time. The history now covers your last 60 games instead of 20.
+
 ## [1.6.0] - 2026-09-28
 
 ### Added

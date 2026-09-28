@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.8.1] - 2026-09-28
+
+### Added
+- The LP graph's **Peak** is now an all-time peak that's stored separately from the 30-day snapshots, so it survives history trimming and can predate the graph window.
+
 ## [1.8.0] - 2026-09-28
 
 ### Added

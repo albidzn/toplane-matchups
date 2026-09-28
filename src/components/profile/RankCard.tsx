@@ -8,9 +8,10 @@ interface RankCardProps {
   title: string;
   entry?: RankedEntry;
   history?: LpSnapshot[];
+  peak?: LpSnapshot | null;
 }
 
-export default function RankCard({ title, entry, history }: RankCardProps) {
+export default function RankCard({ title, entry, history, peak }: RankCardProps) {
   const wr = entry ? winrate(entry.wins, entry.losses) : 0;
 
   return (
@@ -58,7 +59,7 @@ export default function RankCard({ title, entry, history }: RankCardProps) {
             </span>
           </div>
 
-          {history && <LpGraph history={history} />}
+          {history && <LpGraph history={history} peak={peak} />}
         </>
       )}
     </div>

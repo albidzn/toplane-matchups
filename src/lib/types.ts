@@ -136,7 +136,7 @@ export interface Profile {
   updatedAt: number;
   account?: ProfileAccount;
   ranked?: { solo?: RankedEntry; flex?: RankedEntry };
-  lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[] };
+  lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[]; peak?: { solo?: LpSnapshot | null; flex?: LpSnapshot | null } };
   mastery?: MasteryEntry[];
   recent?: MatchSummary[];
   /** Longer, newest-first match list used for the session-grouped history. */

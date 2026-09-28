@@ -1,17 +1,19 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { LpSnapshot } from "../../lib/types";
-import { buildLpSeries, lpAxisLabel } from "../../lib/lp";
+import { absoluteLp, buildLpSeries, lpAxisLabel } from "../../lib/lp";
 import { rankLabel } from "../../lib/profile";
 
 interface LpGraphProps {
   history: LpSnapshot[];
+  /** All-time peak; wins over the 30-day peak when higher. */
+  peak?: LpSnapshot | null;
   days?: number;
 }
 
 const H = 140;
 const PAD = { left: 34, right: 8, top: 8, bottom: 20 };
 
-export default function LpGraph({ history, days = 30 }: LpGraphProps) {
+export default function LpGraph({ history, peak, days = 30 }: LpGraphProps) {
   const gradId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(320);
@@ -57,6 +59,7 @@ export default function LpGraph({ history, days = 30 }: LpGraphProps) {
   const area = `${line} V ${y(yMin)} H ${x(series.points[0].t)} Z`;
 
   const up = series.delta >= 0;
+  const shownPeak = peak && absoluteLp(peak) > absoluteLp(series.peak) ? peak : series.peak;
   const xLabels = [
     { t: start, text: `-${days}d` },
     { t: start + (now - start) / 2, text: `-${Math.round(days / 2)}d` },
@@ -73,7 +76,7 @@ export default function LpGraph({ history, days = 30 }: LpGraphProps) {
           </span>
         </div>
         <span className="rounded bg-ink-800 px-1.5 py-0.5 text-[11px] text-slate-400">
-          Peak: <span className="font-semibold text-slate-200">{rankLabel(series.peak)} · {series.peak.lp} LP</span>
+          Peak: <span className="font-semibold text-slate-200">{rankLabel(shownPeak)} · {shownPeak.lp} LP</span>
         </span>
       </div>
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { absoluteLp, buildLpSeries, lpAxisLabel } from "../src/lib/lp";
-import { appendSnapshot } from "../server/lp-history.js";
+import { appendSnapshot, updatePeak, absoluteLp as serverAbsoluteLp } from "../server/lp-history.js";
 import type { LpSnapshot } from "../src/lib/types";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -88,5 +88,34 @@ describe("appendSnapshot", () => {
   it("drops entries older than the retention window and tolerates unranked", () => {
     const old = { t: NOW - 400 * DAY, ...entry };
     expect(appendSnapshot([old], undefined, NOW)).toEqual([]);
+  });
+});
+
+describe("updatePeak", () => {
+  const master325 = { t: 1, tier: "MASTER", rank: "I", lp: 325 };
+
+  it("keeps a higher stored peak even when current snapshots are lower", () => {
+    const peak = updatePeak(master325, [{ t: 5, tier: "MASTER", rank: "I", lp: 6 }]);
+    expect(peak).toBe(master325);
+  });
+
+  it("raises the peak when a snapshot beats it, across tiers", () => {
+    const peak = updatePeak({ t: 1, tier: "DIAMOND", rank: "I", lp: 99 }, [{ t: 5, tier: "MASTER", rank: "I", lp: 0 }]);
+    expect(peak).toMatchObject({ tier: "MASTER", lp: 0 });
+  });
+
+  it("returns null with no data at all", () => {
+    expect(updatePeak(null, [])).toBeNull();
+  });
+
+  it("uses the same ladder math as the frontend", () => {
+    for (const s of [
+      { tier: "IRON", rank: "IV", lp: 0 },
+      { tier: "GOLD", rank: "II", lp: 45 },
+      { tier: "DIAMOND", rank: "I", lp: 99 },
+      { tier: "MASTER", rank: "I", lp: 325 },
+    ]) {
+      expect(serverAbsoluteLp(s)).toBe(absoluteLp(s));
+    }
   });
 });

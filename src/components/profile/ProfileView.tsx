@@ -122,7 +122,9 @@ export default function ProfileView({
         className={`mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] ${queue === "all" ? "sm:grid-cols-2" : ""}`}
       >
         {queue !== "flex" && (
-          <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo ?? []} />
+          <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo ?? []}
+            peak={profile.lpHistory?.peak?.solo}
+          />
         )}
         {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />}
       </div>

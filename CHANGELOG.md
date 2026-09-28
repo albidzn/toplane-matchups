@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.13.3] - 2026-09-28
+
+### Fixed
+- Arena backfill could permanently drop a discovered match if it wasn't fetched within the same refresh that finished paging its queue — once a queue's id discovery was marked done, anything left over from that queue was never reconsidered again (only its ~20 most recent games kept getting rediscovered). Not-yet-fetched match ids are now kept in a persistent queue that's drained across refreshes until nothing's left, so a full backfill no longer silently stalls partway through for an account with a lot of Arena history. Also raised how many matches get fetched per refresh (20 → 80) so it catches up faster.
+
 ## [1.13.2] - 2026-09-28
 
 ### Fixed

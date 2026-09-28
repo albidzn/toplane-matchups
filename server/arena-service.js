@@ -7,7 +7,11 @@ import { STATIC_ARENA_QUEUE_IDS, arenaQueueIdsFromLcuQueues, buildArenaMatchEntr
 const TTL_MS = 2 * 60 * 1000;
 const DISCOVERY_COUNT = 20; // recent ids checked every refresh, so a just-finished game shows up fast
 const BACKFILL_PAGE = 100; // deeper history page size per queue, while backfilling
-const BACKFILL_PER_REFRESH = 20; // full matches fetched per refresh, to stay well inside rate limits
+// Full matches fetched per refresh. riot.js already throttles every request to a shared ~14/s
+// queue, so this only bounds how long one refresh takes to respond, not the request rate — for a
+// heavily-played Arena account the initial backfill can have several hundred candidate matches, and
+// 20/refresh (a 2-minute TTL apart) took the better part of an hour to catch up.
+const BACKFILL_PER_REFRESH = 80;
 
 export function createArenaService({ dataDir, getChampions }) {
   const cachePath = path.join(dataDir, "arena-cache.json");
@@ -101,15 +105,28 @@ export function createArenaService({ dataDir, getChampions }) {
       const puuid = account.puuid;
 
       let cache = await loadCache();
-      if (!cache || cache.puuid !== puuid) cache = { puuid, entries: {}, scan: {} };
+      if (!cache || cache.puuid !== puuid) cache = { puuid, entries: {}, scan: {}, pendingIds: [] };
+      if (!cache.pendingIds) cache.pendingIds = []; // migrate a cache saved before this field existed
 
       const arenaQueueIds = await resolveArenaQueueIds();
 
-      const candidateIds = new Set();
+      // A discovered id waits here — possibly across several refreshes — until it's actually
+      // fetched. Without this, an id found on the one refresh that finishes a queue's backfill
+      // page (marking it `done`) but not fetched within that same refresh's BACKFILL_PER_REFRESH
+      // budget would never be reconsidered again: once `done`, that queue's backfill loop is
+      // skipped on every later refresh, and only its most recent ~20 games get rediscovered.
+      const pending = new Set(cache.pendingIds);
+      const enqueue = (id) => {
+        if (!cache.entries[id] && !pending.has(id)) {
+          pending.add(id);
+          cache.pendingIds.push(id);
+        }
+      };
+
       for (const queue of arenaQueueIds) {
         try {
           const recent = await client.getMatchIds(puuid, DISCOVERY_COUNT, { queue, start: 0 });
-          recent.forEach((id) => candidateIds.add(id));
+          recent.forEach(enqueue);
         } catch {
           // transient — this queue's discovery just skips this refresh
         }
@@ -119,30 +136,31 @@ export function createArenaService({ dataDir, getChampions }) {
         if (state.done) continue;
         try {
           const page = await client.getMatchIds(puuid, BACKFILL_PAGE, { queue, start: state.offset });
-          page.forEach((id) => candidateIds.add(id));
+          page.forEach(enqueue);
           cache.scan[queue] = { offset: state.offset + page.length, done: page.length < BACKFILL_PAGE };
         } catch {
           // transient — retry this queue's backfill page next refresh
         }
       }
 
-      const newIds = [...candidateIds].filter((id) => !cache.entries[id]).slice(0, BACKFILL_PER_REFRESH);
-      for (const id of newIds) {
+      const toFetch = cache.pendingIds.slice(0, BACKFILL_PER_REFRESH);
+      for (const id of toFetch) {
         try {
           const match = await client.getMatch(id);
           // store a tombstone for non-Arena ids too (a queue id can be reused for another mode later),
           // so we don't keep re-fetching the same match every refresh
           cache.entries[id] = buildArenaMatchEntry(match, puuid, champions) ?? { skip: true };
         } catch (err) {
-          if (err instanceof RiotApiError) break; // rate limited / transient — try again next refresh
+          if (err instanceof RiotApiError) break; // rate limited / transient — retry next refresh
           throw err;
         }
       }
+      cache.pendingIds = cache.pendingIds.filter((id) => !cache.entries[id]);
 
       await saveCache(cache);
 
       const stats = aggregateArenaStats(Object.values(cache.entries).filter((e) => !e.skip));
-      const backfillComplete = arenaQueueIds.every((q) => cache.scan[q]?.done);
+      const backfillComplete = arenaQueueIds.every((q) => cache.scan[q]?.done) && cache.pendingIds.length === 0;
 
       const result = { configured: true, updatedAt: Date.now(), stats, backfillComplete };
       memArena = result;

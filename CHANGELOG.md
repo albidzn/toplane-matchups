@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.10.0] - 2026-09-28
+
+### Changed
+- **Exact GM/Challenger cutoffs**: taken from the League client's own ladder (the lowest LP of players not in the demotion zone, e.g. GM 1714 instead of the public API's 1559, which counts demotion-zone players). The last exact value is remembered for when the client is closed; only if there is none, a `~`-marked estimate from the public API is shown.
+- **LP graph is tier-coloured**: light-blue Diamond background, purple Master (and red Grandmaster / cyan Challenger) bands, and the line itself changes colour with the tier it is in.
+- **Rank area**: Solo/Duo is the main card (bar + graph); Flex is a slim single-row card under it on the "All" view, or the main card on the Flex filter.
+
 ## [1.9.0] - 2026-09-28
 
 ### Added

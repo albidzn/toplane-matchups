@@ -3,7 +3,8 @@ import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
 import { aggregateMatches, championStatsByQueue } from "./profile-stats.js";
 import { createLpStore } from "./lp-history.js";
-import { APEX_TIERS, cutoffFromLeague } from "./apex.js";
+import { APEX_TIERS, cutoffFromLeague, cutoffsFromLcuLadder } from "./apex.js";
+import { createLcuConnector } from "./lcu.js";
 
 const TTL_MS = 2 * 60 * 1000;
 // Cap how many matches we keep on disk so the cache file (and JSON parse
@@ -15,6 +16,7 @@ const MATCH_CACHE_LIMIT = 1000;
 const HISTORY_SIZE = 60;
 const BACKFILL_PER_REFRESH = 15;
 const APEX_CUTOFF_TTL_MS = 30 * 60 * 1000;
+const APEX_CUTOFF_DISK_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function championIdByKey(champions, key) {
   return champions.find((c) => c.key === String(key))?.id ?? null;
@@ -99,14 +101,52 @@ export function createProfileService({ dataDir, getChampions }) {
   let inFlight = null; // dedupe concurrent refreshes
   let apexCache = { at: 0, value: null };
 
-  /** GM/Challenger LP cutoffs — only fetched for Master+ players, cached since they barely move. */
+  const lcu = createLcuConnector();
+  const apexDiskPath = path.join(dataDir, "apex-cutoffs.json");
+
+  async function readApexDisk() {
+    try {
+      const saved = JSON.parse(await fs.readFile(apexDiskPath, "utf-8"));
+      return Date.now() - saved.at < APEX_CUTOFF_DISK_MAX_AGE_MS ? saved.value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * GM/Challenger LP cutoffs, only for Master+ players. Exact when the League client is running
+   * (its ladder marks who's in the demotion zone); otherwise the last exact value we saw, and only
+   * as a last resort an estimate from the public API (which counts demotion-zone players, so it reads low).
+   */
   async function getApexCutoffs(client, soloEntry) {
     if (!soloEntry || !APEX_TIERS.has(soloEntry.tier)) return null;
     if (apexCache.value && Date.now() - apexCache.at < APEX_CUTOFF_TTL_MS) return apexCache.value;
+
+    try {
+      if (await lcu.ensureConnected()) {
+        const exact = cutoffsFromLcuLadder(await lcu.get("/lol-ranked/v1/apex-leagues/RANKED_SOLO_5x5/GRANDMASTER"));
+        if (exact) {
+          const value = { ...exact, approx: false };
+          apexCache = { at: Date.now(), value };
+          await fs.mkdir(dataDir, { recursive: true });
+          await fs.writeFile(apexDiskPath, JSON.stringify({ at: Date.now(), value }), "utf-8").catch(() => {});
+          return value;
+        }
+      }
+    } catch {
+      // client not reachable / ladder not available — fall through to cached or estimated values
+    }
+
+    const saved = await readApexDisk();
+    if (saved) {
+      apexCache = { at: Date.now(), value: { ...saved, approx: false } };
+      return apexCache.value;
+    }
+
     try {
       const grandmaster = cutoffFromLeague(await client.getApexLeague("grandmaster"));
       const challenger = cutoffFromLeague(await client.getApexLeague("challenger"));
-      apexCache = { at: Date.now(), value: { grandmaster, challenger } };
+      apexCache = { at: Date.now(), value: { grandmaster, challenger, approx: true } };
     } catch {
       // keep serving the last known cutoffs (or none) rather than failing the whole profile
     }

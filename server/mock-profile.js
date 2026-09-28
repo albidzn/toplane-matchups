@@ -25,20 +25,23 @@ const MOCK_DIVISIONS = ["IV", "III", "II", "I"];
 
 // A believable 30-day climb ending at the given entry, as a random walk in absolute LP.
 function buildMockLpHistory(rand, entry) {
-  const end = MOCK_TIERS.indexOf(entry.tier) * 400 + MOCK_DIVISIONS.indexOf(entry.rank) * 100 + entry.lp;
+  const tierIdx = MOCK_TIERS.indexOf(entry.tier);
+  const end = tierIdx === -1 ? 2800 + entry.lp : tierIdx * 400 + MOCK_DIVISIONS.indexOf(entry.rank) * 100 + entry.lp;
   const now = Date.now();
   const steps = 16;
   let value = end - 140;
   const out = [];
   for (let i = 0; i < steps; i++) {
     const v = Math.max(0, i === steps - 1 ? end : Math.round(value));
-    const tier = Math.min(MOCK_TIERS.length - 1, Math.floor(v / 400));
-    out.push({
-      t: now - (steps - 1 - i) * 1.9 * 24 * 3600 * 1000,
-      tier: MOCK_TIERS[tier],
-      rank: MOCK_DIVISIONS[Math.floor((v % 400) / 100)],
-      lp: v % 100,
-    });
+    const t = now - (steps - 1 - i) * 1.9 * 24 * 3600 * 1000;
+    if (v >= 2800) out.push({ t, tier: "MASTER", rank: "I", lp: v - 2800 });
+    else
+      out.push({
+        t,
+        tier: MOCK_TIERS[Math.floor(v / 400)],
+        rank: MOCK_DIVISIONS[Math.floor((v % 400) / 100)],
+        lp: v % 100,
+      });
     value += (rand() - 0.3) * 40 + 8;
   }
   return out;
@@ -164,7 +167,7 @@ export function buildMockProfile(mode) {
       profileIconId: 4568,
     },
     ranked,
-    apexCutoffs: process.env.RIOT_MOCK_APEX ? { grandmaster: 1719, challenger: 2312 } : null,
+    apexCutoffs: process.env.RIOT_MOCK_APEX ? { grandmaster: 1714, challenger: 2323, approx: false } : null,
     lpHistory: {
       solo: buildMockLpHistory(rand, ranked.solo),
       flex: buildMockLpHistory(rand, ranked.flex),

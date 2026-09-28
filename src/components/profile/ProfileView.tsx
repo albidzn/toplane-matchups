@@ -118,16 +118,17 @@ export default function ProfileView({
         <QueueFilterTabs value={queue} onChange={setQueue} />
       </div>
 
-      <div
-        className={`mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] ${queue === "all" ? "sm:grid-cols-2" : ""}`}
-      >
+      <div className="mb-4 animate-fade-slide-up space-y-3 [animation-delay:40ms]">
         {queue !== "flex" && (
-          <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo ?? []}
+          <RankCard
+            title="Ranked Solo/Duo"
+            entry={profile.ranked?.solo}
+            history={profile.lpHistory?.solo ?? []}
             peak={profile.lpHistory?.peak?.solo}
             apexCutoffs={profile.apexCutoffs}
           />
         )}
-        {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />}
+        {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} compact={queue === "all"} />}
       </div>
 
       <div className="space-y-4 pb-2">

@@ -1,20 +1,21 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { LpSnapshot } from "../../lib/types";
-import { absoluteLp, buildLpSeries, lpAxisLabel } from "../../lib/lp";
+import type { ApexCutoffs, LpSnapshot } from "../../lib/types";
+import { absoluteLp, buildLpSeries, lpAxisLabel, TIER_COLOR, tierBands, tierOfAbsolute } from "../../lib/lp";
 import { rankLabel } from "../../lib/profile";
 
 interface LpGraphProps {
   history: LpSnapshot[];
   /** All-time peak; wins over the 30-day peak when higher. */
   peak?: LpSnapshot | null;
+  cutoffs?: ApexCutoffs | null;
   days?: number;
 }
 
 const H = 140;
 const PAD = { left: 34, right: 8, top: 8, bottom: 20 };
 
-export default function LpGraph({ history, peak, days = 30 }: LpGraphProps) {
-  const gradId = useId();
+export default function LpGraph({ history, peak, cutoffs, days = 30 }: LpGraphProps) {
+  const lineGradId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(320);
   const W = Math.max(240, width);
@@ -58,6 +59,7 @@ export default function LpGraph({ history, peak, days = 30 }: LpGraphProps) {
   line += ` H ${x(now)}`;
   const area = `${line} V ${y(yMin)} H ${x(series.points[0].t)} Z`;
 
+  const bands = tierBands(yMin, yMax, cutoffs);
   const up = series.delta >= 0;
   const shownPeak = peak && absoluteLp(peak) > absoluteLp(series.peak) ? peak : series.peak;
   const xLabels = [
@@ -80,13 +82,30 @@ export default function LpGraph({ history, peak, days = 30 }: LpGraphProps) {
         </span>
       </div>
 
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="block text-hextech-400" role="img" aria-label={`LP over the last ${days} days`}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="block" role="img" aria-label={`LP over the last ${days} days`}>
         <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          <linearGradient id={lineGradId} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1={y(yMax)} y2={y(yMin)}>
+            {bands
+              .slice()
+              .reverse()
+              .flatMap((band) => [
+                <stop key={`${band.tier}-top-${band.to}`} offset={(yMax - band.to) / (yMax - yMin)} stopColor={TIER_COLOR[band.tier]} />,
+                <stop key={`${band.tier}-bot-${band.from}`} offset={(yMax - band.from) / (yMax - yMin)} stopColor={TIER_COLOR[band.tier]} />,
+              ])}
           </linearGradient>
         </defs>
+
+        {bands.map((band) => (
+          <rect
+            key={`${band.tier}-${band.from}`}
+            x={PAD.left}
+            width={W - PAD.left - PAD.right}
+            y={y(band.to)}
+            height={y(band.from) - y(band.to)}
+            fill={TIER_COLOR[band.tier]}
+            fillOpacity="0.13"
+          />
+        ))}
 
         {ticks.map((v) => (
           <g key={v}>
@@ -97,9 +116,9 @@ export default function LpGraph({ history, peak, days = 30 }: LpGraphProps) {
           </g>
         ))}
 
-        <path d={area} fill={`url(#${gradId})`} />
-        <path d={line} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
-        <circle cx={x(now)} cy={y(last.value)} r="3" className="fill-gold-400" />
+        <path d={area} fill={`url(#${lineGradId})`} fillOpacity="0.14" />
+        <path d={line} fill="none" stroke={`url(#${lineGradId})`} strokeWidth="2" strokeLinejoin="round" />
+        <circle cx={x(now)} cy={y(last.value)} r="3.5" fill={TIER_COLOR[tierOfAbsolute(last.value, cutoffs)]} stroke="#0b0f1a" strokeWidth="1" />
 
         {xLabels.map((l, i) => (
           <text

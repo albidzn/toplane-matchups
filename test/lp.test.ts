@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { absoluteLp, apexProgress, buildLpSeries, lpAxisLabel } from "../src/lib/lp";
+import { absoluteLp, apexProgress, buildLpSeries, lpAxisLabel, tierBands, tierOfAbsolute } from "../src/lib/lp";
 import { appendSnapshot, updatePeak, absoluteLp as serverAbsoluteLp } from "../server/lp-history.js";
 import type { LpSnapshot } from "../src/lib/types";
 
@@ -150,5 +150,32 @@ describe("apexProgress", () => {
     expect(apexProgress({ tier: "DIAMOND", lp: 50 }, cutoffs)).toBeNull();
     expect(apexProgress({ tier: "MASTER", lp: 50 }, null)).toBeNull();
     expect(apexProgress({ tier: "GRANDMASTER", lp: 50 }, { grandmaster: null, challenger: 2312 })).toBeNull();
+  });
+});
+
+describe("tier colouring", () => {
+  it("maps absolute LP to tiers", () => {
+    expect(tierOfAbsolute(0)).toBe("IRON");
+    expect(tierOfAbsolute(2655)).toBe("DIAMOND");
+    expect(tierOfAbsolute(2806)).toBe("MASTER");
+  });
+
+  it("splits apex LP at the GM and Challenger cutoffs", () => {
+    const cutoffs = { grandmaster: 1714, challenger: 2323 };
+    expect(tierOfAbsolute(2800 + 1000, cutoffs)).toBe("MASTER");
+    expect(tierOfAbsolute(2800 + 1714, cutoffs)).toBe("GRANDMASTER");
+    expect(tierOfAbsolute(2800 + 2400, cutoffs)).toBe("CHALLENGER");
+  });
+
+  it("builds contiguous bands from Diamond into Master", () => {
+    const bands = tierBands(2655, 2900);
+    expect(bands).toEqual([
+      { tier: "DIAMOND", from: 2655, to: 2800 },
+      { tier: "MASTER", from: 2800, to: 2900 },
+    ]);
+  });
+
+  it("returns a single band inside one tier", () => {
+    expect(tierBands(1210, 1390)).toEqual([{ tier: "GOLD", from: 1210, to: 1390 }]);
   });
 });

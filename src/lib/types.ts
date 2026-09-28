@@ -123,6 +123,13 @@ export interface ProfileError {
   message: string;
 }
 
+export interface ApexCutoffs {
+  grandmaster: number | null;
+  challenger: number | null;
+  /** True when estimated from the public API (reads low); false when taken from the League client's ladder. */
+  approx?: boolean;
+}
+
 export interface LpSnapshot {
   t: number; // epoch ms
   tier: string;
@@ -136,7 +143,7 @@ export interface Profile {
   updatedAt: number;
   account?: ProfileAccount;
   ranked?: { solo?: RankedEntry; flex?: RankedEntry };
-  apexCutoffs?: { grandmaster: number | null; challenger: number | null } | null;
+  apexCutoffs?: ApexCutoffs | null;
   lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[]; peak?: { solo?: LpSnapshot | null; flex?: LpSnapshot | null } };
   mastery?: MasteryEntry[];
   recent?: MatchSummary[];

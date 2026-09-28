@@ -1,4 +1,4 @@
-import type { LpSnapshot, RankedEntry } from "../../lib/types";
+import type { ApexCutoffs, LpSnapshot, RankedEntry } from "../../lib/types";
 import { apexProgress } from "../../lib/lp";
 import { rankEmblemUrl } from "../../lib/champions";
 import { rankLabel, winrate } from "../../lib/profile";
@@ -10,12 +10,23 @@ interface RankCardProps {
   entry?: RankedEntry;
   history?: LpSnapshot[];
   peak?: LpSnapshot | null;
-  apexCutoffs?: { grandmaster: number | null; challenger: number | null } | null;
+  apexCutoffs?: ApexCutoffs | null;
+  /** One slim row instead of the full card — used for the secondary queue. */
+  compact?: boolean;
 }
 
 const APEX = new Set(["MASTER", "GRANDMASTER", "CHALLENGER"]);
 
-function ApexBar({ lp, progress }: { lp: number; progress: NonNullable<ReturnType<typeof apexProgress>> }) {
+function ApexBar({
+  lp,
+  progress,
+  approx,
+}: {
+  lp: number;
+  progress: NonNullable<ReturnType<typeof apexProgress>>;
+  approx: boolean;
+}) {
+  const mark = approx ? "~" : "";
   const { lower, upper, fraction } = progress;
   const pct = (fraction ?? 0) * 100;
   return (
@@ -42,11 +53,11 @@ function ApexBar({ lp, progress }: { lp: number; progress: NonNullable<ReturnTyp
       ) : null}
       <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
         <span>
-          <span className="font-semibold text-slate-300">{lower.label}</span> | {lower.lp} LP
+          <span className="font-semibold text-slate-300">{lower.label}</span> | {lower.lp > 0 ? mark : ""}{lower.lp} LP
         </span>
         {upper && (
           <span>
-            <span className="font-semibold text-slate-300">{upper.label}</span> | {upper.lp} LP
+            <span className="font-semibold text-slate-300">{upper.label}</span> | {mark}{upper.lp} LP
           </span>
         )}
       </div>
@@ -54,8 +65,44 @@ function ApexBar({ lp, progress }: { lp: number; progress: NonNullable<ReturnTyp
   );
 }
 
-export default function RankCard({ title, entry, history, peak, apexCutoffs }: RankCardProps) {
+export default function RankCard({ title, entry, history, peak, apexCutoffs, compact }: RankCardProps) {
   const wr = entry ? winrate(entry.wins, entry.losses) : 0;
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-ink-700 bg-ink-900/60 px-4 py-3 transition-colors duration-150 hover:border-ink-600">
+        {entry ? (
+          <RemoteImg
+            src={rankEmblemUrl(entry.tier)}
+            alt={entry.tier}
+            className="h-11 w-11 shrink-0 drop-shadow-lg"
+            fallback={<div className="h-11 w-11 shrink-0 rounded-full bg-ink-800" />}
+          />
+        ) : (
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink-800 text-sm opacity-40">?</div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{title}</div>
+          {entry ? (
+            <div className="truncate font-display text-sm font-bold text-slate-100">
+              {rankLabel(entry)} <span className="font-sans text-xs font-normal text-slate-500">· {entry.lp} LP</span>
+              {entry.hotStreak && <span className="ml-1.5 text-xs">🔥</span>}
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500">Unranked</div>
+          )}
+        </div>
+        {entry && (
+          <div className="shrink-0 text-right text-xs">
+            <div className="text-slate-400">
+              {entry.wins}W {entry.losses}L
+            </div>
+            <div className={wr >= 50 ? "font-semibold text-emerald-400" : "font-semibold text-red-400"}>{wr}%</div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-ink-700 bg-ink-900/60 p-4 transition-colors duration-150 hover:border-ink-600">
@@ -89,7 +136,7 @@ export default function RankCard({ title, entry, history, peak, apexCutoffs }: R
           {APEX.has(entry.tier.toUpperCase()) ? (
             (() => {
               const progress = apexProgress(entry, apexCutoffs);
-              return progress ? <ApexBar lp={entry.lp} progress={progress} /> : null;
+              return progress ? <ApexBar lp={entry.lp} progress={progress} approx={Boolean(apexCutoffs?.approx)} /> : null;
             })()
           ) : (
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-800">
@@ -109,7 +156,7 @@ export default function RankCard({ title, entry, history, peak, apexCutoffs }: R
             </span>
           </div>
 
-          {history && <LpGraph history={history} peak={peak} />}
+          {history && <LpGraph history={history} peak={peak} cutoffs={apexCutoffs} />}
         </>
       )}
     </div>

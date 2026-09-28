@@ -22,14 +22,20 @@ function championIdByKey(champions, key) {
   return champions.find((c) => c.key === String(key))?.id ?? null;
 }
 
-/** Slim per-match record — no scoreboard, just enough to know "did I win, on what champion". */
+/**
+ * Slim per-match record — no scoreboard, just enough to know "did I win, on what champion".
+ * "Win" here means finishing 1st, not just top-4/podium: `participant.win` for Arena is actually
+ * true for any top-4 (podium) finish, which is a *looser* bar than what "won" means in the
+ * Arena Season Journey checklist — that one only checks off a champion on an outright 1st place,
+ * i.e. `participant.placement === 1`.
+ */
 export function buildArenaMatchEntry(match, puuid, champions) {
   if (!isArenaMatch(match)) return null;
   const me = match?.info?.participants?.find((p) => p.puuid === puuid);
   if (!me) return null;
   return {
     champion: championIdByKey(champions, me.championId) ?? me.championName,
-    win: Boolean(me.win),
+    win: me.placement === 1,
     gameEnd: match.info.gameEndTimestamp ?? match.info.gameStartTimestamp ?? Date.now(),
   };
 }

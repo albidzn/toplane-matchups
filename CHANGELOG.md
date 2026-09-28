@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.13.2] - 2026-09-28
+
+### Fixed
+- Arena "won" now means finishing 1st place, matching the Arena Season Journey's own definition — a top-4 (podium) finish no longer counts as a win. Riot's own `win` field is actually true for any podium finish, which was too generous; the checkmark now comes from `placement === 1` instead.
+
 ## [1.13.1] - 2026-09-28
 
 ### Fixed

@@ -6,13 +6,13 @@ const champions = [
   { id: "Ahri", name: "Ahri", key: "103" },
 ];
 
-function match({ gameMode = "CHERRY", championId = 875, win = true, puuid = "p1" } = {}) {
+function match({ gameMode = "CHERRY", championId = 875, placement = 1, puuid = "p1" } = {}) {
   return {
     metadata: { matchId: "M1" },
     info: {
       gameMode,
       gameEndTimestamp: 1000,
-      participants: [{ puuid, championId, win, championName: "Sett" }],
+      participants: [{ puuid, championId, placement, win: placement <= 4, championName: "Sett" }],
     },
   };
 }
@@ -26,9 +26,18 @@ describe("isArenaMatch", () => {
 });
 
 describe("buildArenaMatchEntry", () => {
-  it("maps the participant's champion and win onto a Data Dragon id", () => {
-    const entry = buildArenaMatchEntry(match({ championId: 875, win: true }), "p1", champions);
+  it("maps the participant's champion and 1st-place finish onto a Data Dragon id", () => {
+    const entry = buildArenaMatchEntry(match({ championId: 875, placement: 1 }), "p1", champions);
     expect(entry).toMatchObject({ champion: "Sett", win: true, gameEnd: 1000 });
+  });
+
+  it("does NOT count a top-4 (podium) finish that isn't 1st place as a win", () => {
+    // Riot's own `win` field is true for any top-4 finish — deliberately not used here,
+    // since the Arena Season Journey's own definition of "won" is strictly 1st place.
+    for (const placement of [2, 3, 4]) {
+      const entry = buildArenaMatchEntry(match({ placement }), "p1", champions);
+      expect(entry.win).toBe(false);
+    }
   });
 
   it("returns null for a non-Arena match", () => {

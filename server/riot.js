@@ -166,8 +166,12 @@ export function createRiotClient({ apiKey, platform }) {
       return requestPlatformOrNull(`/lol/spectator/v5/active-games/by-summoner/${puuid}`);
     },
 
-    getMatchIds(puuid, count) {
-      return requestRegion(`/lol/match/v5/matches/by-puuid/${puuid}/ids?type=ranked&start=0&count=${count}`);
+    /** Defaults to ranked history from the start; pass `queue` (and optionally `start`) to page through a specific queue instead (used for Arena, which isn't "ranked"). */
+    getMatchIds(puuid, count, { start = 0, queue } = {}) {
+      const params = new URLSearchParams({ start: String(start), count: String(count) });
+      if (queue != null) params.set("queue", String(queue));
+      else params.set("type", "ranked");
+      return requestRegion(`/lol/match/v5/matches/by-puuid/${puuid}/ids?${params}`);
     },
 
     getMatch(matchId) {

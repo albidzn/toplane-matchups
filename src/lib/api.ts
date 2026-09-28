@@ -1,4 +1,4 @@
-import type { ChampionsResponse, LiveState, MatchupsData, Profile, Settings, SettingsInput } from "./types";
+import type { Arena, ChampionsResponse, LiveState, MatchupsData, Profile, Settings, SettingsInput } from "./types";
 
 export async function fetchMatchups(): Promise<MatchupsData> {
   const res = await fetch("/api/matchups");
@@ -27,6 +27,11 @@ export async function fetchProfile(refresh = false): Promise<Profile> {
   const res = await fetch(`/api/profile${refresh ? "?refresh=1" : ""}`);
   // the profile endpoint returns 200 or 502, but the body is always a
   // Profile-shaped object (with .error set on failure) — read it either way
+  return res.json();
+}
+
+export async function fetchArena(refresh = false): Promise<Arena> {
+  const res = await fetch(`/api/arena${refresh ? "?refresh=1" : ""}`);
   return res.json();
 }
 

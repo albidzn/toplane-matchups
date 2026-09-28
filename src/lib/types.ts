@@ -173,7 +173,7 @@ export interface SettingsInput {
 
 // ---------- Live game ----------
 
-export type LivePhase = "idle" | "champselect" | "loading" | "in-progress" | "postgame";
+export type LivePhase = "idle" | "champselect" | "loading" | "in-progress" | "postgame" | "arena";
 
 export interface ChampSelectSlot {
   cellId: number;
@@ -244,5 +244,24 @@ export interface LiveState {
   lcuConnected: boolean;
   champSelect: ChampSelectState | null;
   game: LiveGameState | null;
+  /** Set only while phase is "arena" — deliberately minimal, see ArenaLiveView. */
+  arena: { championId: string | null } | null;
   updatedAt: number;
+}
+
+// ---------- Arena ----------
+
+export interface ArenaChampionStat {
+  champion: string;
+  games: number;
+  wins: number;
+}
+
+export interface Arena {
+  configured: boolean;
+  error?: ProfileError;
+  updatedAt: number;
+  stats?: ArenaChampionStat[];
+  /** False while the one-time full history scan is still catching up (early refreshes after first use). */
+  backfillComplete?: boolean;
 }

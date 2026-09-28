@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.13.0] - 2026-09-28
+
+### Added
+- **Arena tab**: every champion, with a checkmark on the ones you've won at least once with in Arena (queue "CHERRY"), plus a X/Y "champions won" counter, search and a "Won only" filter. Full match history isn't needed for this — it scans your whole Arena history once in the background (a few games per refresh, to stay within Riot's rate limits) and then just tracks new games.
+- **Live tab recognizes Arena games**: once you're in an Arena game, the Live tab shows an "Arena mode" card with your champion and whether you've already won with it, instead of trying to force the toplane matchup view onto an 8-team mode it doesn't fit. Champ select isn't broken down further for Arena — deliberately out of scope for now.
+
 ## [1.12.0] - 2026-09-28
 
 ### Changed

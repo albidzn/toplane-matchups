@@ -41,7 +41,7 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
   let liveClientTimer = null;
   let stopped = false;
 
-  let state = { phase: "idle", lcuConnected: false, champSelect: null, game: null, updatedAt: Date.now() };
+  let state = { phase: "idle", lcuConnected: false, champSelect: null, game: null, arena: null, updatedAt: Date.now() };
   let lastEnrichedGameId = null;
   let cachedPuuid = null;
   let liveClientCache = null;
@@ -259,14 +259,41 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
     if (state.lcuConnected !== connected) setState({ lcuConnected: connected });
 
     if (!connected) {
-      if (state.phase !== "idle") setState({ phase: "idle", champSelect: null, game: null });
+      if (state.phase !== "idle") setState({ phase: "idle", champSelect: null, game: null, arena: null });
       cellOverride = null;
       puuidOverride = null;
       return;
     }
 
     try {
-      const phase = await lcu.get("/lol-gameflow/v1/gameflow-phase");
+      // The full session (not just /gameflow-phase) also carries the map's game mode at no extra
+      // request cost, which is how Arena ("CHERRY") is told apart from a normal Summoner's Rift game.
+      const session = await lcu.get("/lol-gameflow/v1/session");
+      const phase = session?.phase ?? "None";
+      const gameMode = session?.map?.gameMode ?? session?.gameData?.queue?.gameMode ?? null;
+
+      if (
+        gameMode === "CHERRY" &&
+        ["ChampSelect", "GameStart", "InProgress", "Reconnect", "WaitingForStats", "PreEndOfGame", "EndOfGame"].includes(phase)
+      ) {
+        // Arena's champ-select/roster data doesn't map onto the lane-based shape the rest of this
+        // service assumes (8 teams of 2, no lanes) — deliberately not attempting a full breakdown here,
+        // just recognizing the mode and, once the game has actually started, your own champion.
+        let championId = null;
+        if (phase !== "ChampSelect") {
+          const data = await getLiveClientData();
+          const riotId = process.env.RIOT_ID ?? "";
+          const [gameName, tagLine] = riotId.split("#");
+          const me = data?.allPlayers?.find(
+            (p) =>
+              (p.riotIdGameName ?? "").toLowerCase() === (gameName ?? "").toLowerCase() &&
+              (p.riotIdTagLine ?? "").toLowerCase() === (tagLine ?? "").toLowerCase()
+          );
+          championId = me?.championName ?? null;
+        }
+        setState({ phase: "arena", champSelect: null, game: null, arena: { championId } });
+        return;
+      }
 
       if (phase === "ChampSelect") {
         if (state.phase !== "champselect") cellOverride = null; // fresh champ select session
@@ -347,7 +374,7 @@ export function createLiveGameService({ dataDir: _dataDir, getChampions }) {
 
       // any other phase (None, Lobby, Matchmaking, ReadyCheck, TerminatedInError, FailedToLaunch, ...)
       if (state.phase !== "idle") {
-        setState({ phase: "idle", champSelect: null, game: null });
+        setState({ phase: "idle", champSelect: null, game: null, arena: null });
         cellOverride = null;
         puuidOverride = null;
       }

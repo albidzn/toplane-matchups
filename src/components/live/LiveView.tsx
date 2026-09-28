@@ -1,9 +1,10 @@
-import type { Champion, Enemy, LiveState, Profile } from "../../lib/types";
+import type { Arena, Champion, Enemy, LiveState, Profile } from "../../lib/types";
 import type { WinLoss } from "../../hooks/useProfile";
 import { overrideChampSelectEnemyLaner, overrideGameEnemyLaner } from "../../lib/api";
 import ChampSelectView from "./ChampSelectView";
 import LoadingScreenView from "./LoadingScreenView";
 import PostGameBanner from "./PostGameBanner";
+import ArenaLiveView from "./ArenaLiveView";
 
 interface LiveViewProps {
   live: LiveState;
@@ -12,6 +13,7 @@ interface LiveViewProps {
   enemies: Enemy[];
   recordsByEnemy: Map<string, Map<string, WinLoss>>;
   profile: Profile | null;
+  arena: Arena | null;
   onQuickAdd: (championId: string) => void;
   onSaveNote: (enemyId: string, championId: string, note: string) => void;
 }
@@ -23,6 +25,7 @@ export default function LiveView({
   enemies,
   recordsByEnemy,
   profile,
+  arena,
   onQuickAdd,
   onSaveNote,
 }: LiveViewProps) {
@@ -35,6 +38,10 @@ export default function LiveView({
         </p>
       </div>
     );
+  }
+
+  if (live.phase === "arena") {
+    return <ArenaLiveView championId={live.arena?.championId ?? null} arena={arena} champions={champions} ddragonVersion={ddragonVersion} />;
   }
 
   if (live.phase === "champselect" && live.champSelect) {

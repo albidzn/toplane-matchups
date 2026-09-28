@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
 import { createProfileService } from "./profile.js";
+import { createArenaService } from "./arena-service.js";
 import { createSettings } from "./settings.js";
 import { createLiveGameService } from "./live-game.js";
 
@@ -155,6 +156,7 @@ export async function startServer(opts = {}) {
   }
 
   const profileService = createProfileService({ dataDir, getChampions });
+  const arenaService = createArenaService({ dataDir, getChampions });
 
   const liveService = process.env.LIVE_MOCK
     ? await import("./mock-live.js").then((m) => m.createMockLiveGameService({ getChampions }))
@@ -216,6 +218,19 @@ export async function startServer(opts = {}) {
     }
   });
 
+  app.get("/api/arena", async (req, res) => {
+    try {
+      res.json(await arenaService.getArena({ refresh: req.query.refresh === "1" }));
+    } catch (err) {
+      console.error("Failed to load arena stats:", err);
+      res.status(502).json({
+        configured: true,
+        error: { code: "UPSTREAM", message: "Unexpected server error." },
+        updatedAt: Date.now(),
+      });
+    }
+  });
+
   app.get("/api/settings", (_req, res) => {
     res.json(settings.get());
   });
@@ -224,6 +239,7 @@ export async function startServer(opts = {}) {
     try {
       await settings.update(req.body ?? {});
       profileService.reset();
+      arenaService.reset();
       liveService.reset();
       res.json(settings.get());
     } catch (err) {

@@ -3,6 +3,7 @@ import { fetchChampions } from "./lib/api";
 import type { Champion } from "./lib/types";
 import { useMatchups } from "./hooks/useMatchups";
 import { useProfile, type WinLoss } from "./hooks/useProfile";
+import { useArena } from "./hooks/useArena";
 import { useStickyState } from "./hooks/useStickyState";
 import { useLiveGame } from "./hooks/useLiveGame";
 import SearchBar, { type SearchBarHandle } from "./components/SearchBar";
@@ -15,8 +16,9 @@ import ProfileChip from "./components/profile/ProfileChip";
 import SettingsModal from "./components/SettingsModal";
 import UpdateBanner from "./components/UpdateBanner";
 import LiveView from "./components/live/LiveView";
+import ArenaView from "./components/arena/ArenaView";
 
-type Tab = "matchups" | "pool" | "profile" | "live";
+type Tab = "matchups" | "pool" | "profile" | "arena" | "live";
 
 export default function App() {
   const {
@@ -38,6 +40,7 @@ export default function App() {
     useProfile();
 
   const live = useLiveGame();
+  const { arena, loading: arenaLoading, refreshing: arenaRefreshing, refresh: refreshArena } = useArena();
 
   const [champions, setChampions] = useState<Champion[]>([]);
   const [ddragonVersion, setDdragonVersion] = useState<string | null>(null);
@@ -174,7 +177,7 @@ export default function App() {
         />
 
         <nav className="flex items-center gap-1 rounded-lg border border-ink-700 bg-ink-850 p-1">
-          {(["matchups", "pool", "profile", "live"] as Tab[]).map((t) => (
+          {(["matchups", "pool", "profile", "arena", "live"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -191,6 +194,8 @@ export default function App() {
                 </>
               ) : t === "profile" ? (
                 "Profile"
+              ) : t === "arena" ? (
+                "Arena"
               ) : (
                 <>
                   Live
@@ -267,8 +272,20 @@ export default function App() {
             enemies={data.enemies}
             recordsByEnemy={recordsByEnemy}
             profile={profile}
+            arena={arena}
             onQuickAdd={addEnemy}
             onSaveNote={upsertPickNote}
+          />
+        ) : tab === "arena" ? (
+          <ArenaView
+            key="arena"
+            arena={arena}
+            loading={arenaLoading}
+            refreshing={arenaRefreshing}
+            onRefresh={refreshArena}
+            champions={champions}
+            ddragonVersion={ddragonVersion}
+            onOpenSettings={() => setSettingsOpen(true)}
           />
         ) : tab === "pool" ? (
           <PoolView

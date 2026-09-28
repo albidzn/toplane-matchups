@@ -23,7 +23,7 @@ function seededRandom(seed) {
 export function createMockLiveGameService({ getChampions }) {
   const emitter = new EventEmitter();
   emitter.setMaxListeners(50);
-  let state = { phase: "idle", lcuConnected: true, champSelect: null, game: null, updatedAt: Date.now() };
+  let state = { phase: "idle", lcuConnected: true, champSelect: null, game: null, arena: null, updatedAt: Date.now() };
   let timers = [];
   let championsById = null;
 
@@ -185,14 +185,22 @@ export function createMockLiveGameService({ getChampions }) {
     });
     after(27000, () => setState({ phase: "postgame" }));
 
-    after(34000, () => setState({ phase: "idle", champSelect: null, game: null }));
+    after(34000, () => setState({ phase: "idle", champSelect: null, game: null, arena: null }));
     after(39000, runCycle); // loop, so the tab auto-switch is easy to re-observe
+  }
+
+  // Set LIVE_MOCK_ARENA=1 to see the Arena recognition instead of the SR cycle above.
+  function runArenaCycle() {
+    setState({ phase: "arena", champSelect: null, game: null, arena: { championId: null } });
+    after(4000, () => setState({ arena: { championId: "Ahri" } }));
+    after(20000, () => setState({ phase: "idle", champSelect: null, game: null, arena: null }));
+    after(24000, runArenaCycle);
   }
 
   return {
     async start() {
       championsById = new Map((await getChampions()).champions.map((c) => [c.id, c]));
-      after(1500, runCycle);
+      after(1500, process.env.LIVE_MOCK_ARENA ? runArenaCycle : runCycle);
     },
     stop: clearTimers,
     reset: () => {},

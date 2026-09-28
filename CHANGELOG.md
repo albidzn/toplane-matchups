@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.12.0] - 2026-09-28
+
+### Changed
+- **The summary follows the match history**: it now covers exactly the games shown below it (20 at first, 40 after "Show more games", and so on), including winrate, KDA, champions and roles.
+- **Role distribution shows the number of games** on hover.
+- The history loads 20 games at a time and its header shows how many of the total are visible.
+
 ## [1.11.1] - 2026-09-28
 
 ### Changed

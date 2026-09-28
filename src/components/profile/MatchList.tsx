@@ -10,15 +10,17 @@ import MatchDetails from "./MatchDetails";
 
 interface MatchListProps {
   matches: MatchSummary[];
+  /** How many games to show; owned by the parent so the summary can follow it. */
+  visible: number;
+  onShowMore: () => void;
   champions: Champion[];
   ddragonVersion: string | null;
 }
 
-const PAGE = 15;
+export const HISTORY_PAGE_SIZE = 20;
 
-export default function MatchList({ matches, champions, ddragonVersion }: MatchListProps) {
+export default function MatchList({ matches, visible, onShowMore, champions, ddragonVersion }: MatchListProps) {
   const nameOf = (id: string) => champions.find((c) => c.id === id)?.name ?? id;
-  const [visible, setVisible] = useState(PAGE);
   const shown = useMemo(() => matches.slice(0, visible), [matches, visible]);
   const sessions = useMemo(() => groupSessions(shown), [shown]);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -26,7 +28,10 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
   return (
     <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-4 [animation-delay:100ms]">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-        Match history <span className="text-slate-600">· {matches.length} games</span>
+        Match history{" "}
+        <span className="text-slate-600">
+          · {Math.min(visible, matches.length)} of {matches.length} games
+        </span>
       </h3>
 
       {matches.length === 0 ? (
@@ -162,7 +167,7 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
 
           {matches.length > visible && (
             <button
-              onClick={() => setVisible((v) => v + PAGE)}
+              onClick={onShowMore}
               className="w-full rounded-lg border border-ink-700 py-2 text-xs font-medium text-slate-400 transition-all hover:border-gold-500/40 hover:text-gold-400 active:scale-[0.98]"
             >
               Show more games ({matches.length - visible} more)

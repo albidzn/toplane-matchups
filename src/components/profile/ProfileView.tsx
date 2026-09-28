@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Champion, Profile } from "../../lib/types";
 import { profileIconUrl } from "../../lib/champions";
 import { formatRelativeTime } from "../../lib/profile";
@@ -8,7 +9,7 @@ import ProfileSetup from "./ProfileSetup";
 import RankCard from "./RankCard";
 import SummaryCard from "./SummaryCard";
 import ChampionStats from "./ChampionStats";
-import MatchList from "./MatchList";
+import MatchList, { HISTORY_PAGE_SIZE } from "./MatchList";
 import QueueFilterTabs from "./QueueFilterTabs";
 
 interface ProfileViewProps {
@@ -33,6 +34,7 @@ export default function ProfileView({
   onOpenSettings,
 }: ProfileViewProps) {
   const [queue, setQueue] = useStickyState<QueueFilter>("lm.profile.queue", "all");
+  const [visibleGames, setVisibleGames] = useState(HISTORY_PAGE_SIZE);
 
   if (loading && !profile) {
     return (
@@ -86,7 +88,13 @@ export default function ProfileView({
           <div className="text-xs text-slate-500">Updated {formatRelativeTime(profile.updatedAt)}</div>
         </div>
 
-        <QueueFilterTabs value={queue} onChange={setQueue} />
+        <QueueFilterTabs
+          value={queue}
+          onChange={(next) => {
+            setQueue(next);
+            setVisibleGames(HISTORY_PAGE_SIZE);
+          }}
+        />
 
         <button
           onClick={onRefresh}
@@ -130,8 +138,14 @@ export default function ProfileView({
       </div>
 
       <div className="space-y-4 pb-2">
-        <SummaryCard recent={filteredHistory.slice(0, 20)} champions={champions} ddragonVersion={ddragonVersion} />
-        <MatchList matches={filteredHistory} champions={champions} ddragonVersion={ddragonVersion} />
+        <SummaryCard recent={filteredHistory.slice(0, visibleGames)} champions={champions} ddragonVersion={ddragonVersion} />
+        <MatchList
+          matches={filteredHistory}
+          visible={visibleGames}
+          onShowMore={() => setVisibleGames((n) => n + HISTORY_PAGE_SIZE)}
+          champions={champions}
+          ddragonVersion={ddragonVersion}
+        />
         <ChampionStats
           championStats={championStats}
           mastery={profile.mastery ?? []}

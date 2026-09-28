@@ -104,14 +104,24 @@ export default function SummaryCard({ recent, champions, ddragonVersion }: Summa
               <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Top roles</div>
               <div className="flex h-[76px] items-end justify-between gap-1.5">
                 {summary.roles.map((r) => (
-                  <div key={r.position} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${positionLabel(r.position)}: ${r.games}`}>
+                  <div
+                    key={r.position}
+                    aria-label={`${positionLabel(r.position)}: ${r.games} ${r.games === 1 ? "game" : "games"}`}
+                    className="group flex h-full flex-1 cursor-default flex-col items-center justify-end gap-1"
+                  >
                     <div className="flex w-full flex-1 items-end">
                       <div
-                        className={`w-full rounded-t-sm transition-[height] duration-700 ease-out ${r.games > 0 ? "bg-gold-500/80" : "bg-ink-800"}`}
-                        style={{ height: `${r.games > 0 ? Math.max(8, (r.games / maxRole) * 100) : 4}%` }}
-                      />
+                        className={`relative w-full rounded-t-sm transition-[height] duration-700 ease-out ${r.games > 0 ? "bg-gold-500/80 group-hover:bg-gold-400" : "bg-ink-800"}`}
+                        style={{ height: `${r.games > 0 ? Math.max(8, (r.games / maxRole) * 78) : 4}%` }}
+                      >
+                        <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-ink-950 px-1.5 py-0.5 text-[10px] font-semibold text-slate-100 opacity-0 shadow ring-1 ring-ink-600 transition-opacity duration-100 group-hover:opacity-100">
+                          {r.games} {r.games === 1 ? "game" : "games"}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[9px] uppercase text-slate-500">{positionLabel(r.position).slice(0, 3)}</span>
+                    <span className="text-[9px] uppercase text-slate-500 group-hover:text-slate-300">
+                      {positionLabel(r.position).slice(0, 3)}
+                    </span>
                   </div>
                 ))}
               </div>

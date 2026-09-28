@@ -104,12 +104,20 @@ export interface ProfileError {
   message: string;
 }
 
+export interface LpSnapshot {
+  t: number; // epoch ms
+  tier: string;
+  rank: string;
+  lp: number;
+}
+
 export interface Profile {
   configured: boolean;
   error?: ProfileError;
   updatedAt: number;
   account?: ProfileAccount;
   ranked?: { solo?: RankedEntry; flex?: RankedEntry };
+  lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[] };
   mastery?: MasteryEntry[];
   recent?: MatchSummary[];
   form?: FormSummary;

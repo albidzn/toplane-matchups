@@ -20,6 +20,30 @@ function seededRandom(seed) {
   };
 }
 
+const MOCK_TIERS = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND"];
+const MOCK_DIVISIONS = ["IV", "III", "II", "I"];
+
+// A believable 30-day climb ending at the given entry, as a random walk in absolute LP.
+function buildMockLpHistory(rand, entry) {
+  const end = MOCK_TIERS.indexOf(entry.tier) * 400 + MOCK_DIVISIONS.indexOf(entry.rank) * 100 + entry.lp;
+  const now = Date.now();
+  const steps = 16;
+  let value = end - 140;
+  const out = [];
+  for (let i = 0; i < steps; i++) {
+    const v = Math.max(0, i === steps - 1 ? end : Math.round(value));
+    const tier = Math.min(MOCK_TIERS.length - 1, Math.floor(v / 400));
+    out.push({
+      t: now - (steps - 1 - i) * 1.9 * 24 * 3600 * 1000,
+      tier: MOCK_TIERS[tier],
+      rank: MOCK_DIVISIONS[Math.floor((v % 400) / 100)],
+      lp: v % 100,
+    });
+    value += (rand() - 0.3) * 40 + 8;
+  }
+  return out;
+}
+
 function buildMockMatches(rand, count) {
   const matches = [];
   const now = Date.now();
@@ -85,6 +109,11 @@ export function buildMockProfile(mode) {
   const matches = buildMockMatches(rand, 60);
   const { form, championStats, matchups } = aggregateMatches(matches);
 
+  const ranked = {
+    solo: { tier: "GOLD", rank: "II", lp: 45, wins: 63, losses: 58, hotStreak: true },
+    flex: { tier: "SILVER", rank: "I", lp: 12, wins: 8, losses: 9, hotStreak: false },
+  };
+
   return {
     configured: true,
     updatedAt,
@@ -94,9 +123,10 @@ export function buildMockProfile(mode) {
       level: 342,
       profileIconId: 4568,
     },
-    ranked: {
-      solo: { tier: "GOLD", rank: "II", lp: 45, wins: 63, losses: 58, hotStreak: true },
-      flex: { tier: "SILVER", rank: "I", lp: 12, wins: 8, losses: 9, hotStreak: false },
+    ranked,
+    lpHistory: {
+      solo: buildMockLpHistory(rand, ranked.solo),
+      flex: buildMockLpHistory(rand, ranked.flex),
     },
     mastery: POOL.map((champion, i) => ({
       champion,

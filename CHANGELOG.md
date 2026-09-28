@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.6.0] - 2026-09-28
+
+### Added
+- **LP graph** on the Solo/Duo and Flex rank cards: your LP over the last 30 days as a step chart across divisions and tiers, with the net LP change and your peak. Riot's API only reports your *current* LP, so the app records it each time it changes (in `data/lp-history.json`) — the graph starts empty and fills in as you play while the app is running.
+
 ## [1.5.0] - 2026-09-28
 
 ### Changed

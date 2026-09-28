@@ -3,6 +3,7 @@ dist
 data/matchups.backup.json
 data/champions-cache.json
 data/match-cache.json
+data/lp-history.json
 data/settings.json
 .env
 .env.*

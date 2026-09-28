@@ -105,8 +105,8 @@ export default function ProfileView({
       )}
 
       <div className="mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] sm:grid-cols-2">
-        <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} />
-        <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />
+        <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo} />
+        <RankCard title="Ranked Flex" entry={profile.ranked?.flex} history={profile.lpHistory?.flex} />
       </div>
 
       <div className="space-y-4 pb-2">

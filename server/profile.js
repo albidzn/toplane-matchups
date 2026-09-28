@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
 import { aggregateMatches } from "./profile-stats.js";
+import { createLpStore } from "./lp-history.js";
 
 const TTL_MS = 2 * 60 * 1000;
 // Cap how many matches we keep on disk so the cache file (and JSON parse
@@ -65,6 +66,7 @@ function buildMatchSummary(match, puuid, champions) {
 
 export function createProfileService({ dataDir, getChampions }) {
   const cachePath = path.join(dataDir, "match-cache.json");
+  const lpStore = createLpStore(dataDir);
 
   let memProfile = null; // last successful (error-free) profile
   let memFetchedAt = 0;
@@ -167,6 +169,8 @@ export function createProfileService({ dataDir, getChampions }) {
         flex: mapLeagueEntry(leagueEntries, "RANKED_FLEX_SR"),
       };
 
+      const lpHistory = await lpStore.record(puuid, ranked).catch(() => ({ solo: [], flex: [] }));
+
       const mastery = masteryRaw.map((m) => ({
         champion: championIdByKey(champions, m.championId) ?? String(m.championId),
         level: m.championLevel,
@@ -185,6 +189,7 @@ export function createProfileService({ dataDir, getChampions }) {
           profileIconId: summoner.profileIconId,
         },
         ranked,
+        lpHistory,
         mastery,
         recent: combined.slice(0, 20),
         form,

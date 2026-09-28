@@ -1,14 +1,16 @@
-import type { RankedEntry } from "../../lib/types";
+import type { LpSnapshot, RankedEntry } from "../../lib/types";
 import { rankEmblemUrl } from "../../lib/champions";
 import { rankLabel, winrate } from "../../lib/profile";
 import RemoteImg from "./RemoteImg";
+import LpGraph from "./LpGraph";
 
 interface RankCardProps {
   title: string;
   entry?: RankedEntry;
+  history?: LpSnapshot[];
 }
 
-export default function RankCard({ title, entry }: RankCardProps) {
+export default function RankCard({ title, entry, history }: RankCardProps) {
   const wr = entry ? winrate(entry.wins, entry.losses) : 0;
 
   return (
@@ -55,6 +57,8 @@ export default function RankCard({ title, entry }: RankCardProps) {
               {wr}%
             </span>
           </div>
+
+          <LpGraph history={history ?? []} />
         </>
       )}
     </div>

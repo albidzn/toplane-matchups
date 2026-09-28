@@ -2,6 +2,17 @@
 // used by both the real Riot-backed profile service and the mock fixture
 // data, so the two stay in sync shape-wise.
 
+export const QUEUE_SOLO = 420;
+export const QUEUE_FLEX = 440;
+
+/** Champion stats split by ranked queue, so the Profile tab's Solo/Duo and Flex filters can swap them in. */
+export function championStatsByQueue(matches) {
+  return {
+    solo: aggregateMatches(matches.filter((m) => m.queueId === QUEUE_SOLO)).championStats,
+    flex: aggregateMatches(matches.filter((m) => m.queueId === QUEUE_FLEX)).championStats,
+  };
+}
+
 /**
  * @param {Array} matches MatchSummary[] — newest first
  * @returns {{ form: object, championStats: object[], matchups: object[] }}

@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.8.0] - 2026-09-28
+
+### Added
+- **Solo/Duo & Flex quick filter** on the Profile tab (All / Solo/Duo / Flex): switches the rank cards, the summary panel, the match history and the champion stats together.
+- **Expandable match history**: click a game to see the full 10-player scoreboard (KDA, damage, CS, items, levels, roles) with your row highlighted. Older cached games get their scoreboard backfilled a few at a time on each refresh.
+
+### Changed
+- Match history rows are tinted green/red with a clear Victory/Defeat label, role and queue.
+- The LP graph is Solo/Duo only (no Flex graph) and now scales to the card width.
+
 ## [1.7.0] - 2026-09-28
 
 ### Added

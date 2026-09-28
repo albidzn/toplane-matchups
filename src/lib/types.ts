@@ -58,6 +58,25 @@ export interface MatchSummary {
   items: number[];
   opponent: MatchOpponent | null;
   remake: boolean;
+  /** Full scoreboard; absent on older cached matches until they've been backfilled. */
+  players?: MatchPlayer[];
+}
+
+export interface MatchPlayer {
+  name: string;
+  champion: string;
+  position: string;
+  teamId: number; // 100 = blue, 200 = red
+  win: boolean;
+  kills: number;
+  deaths: number;
+  assists: number;
+  cs: number;
+  damage: number;
+  gold: number;
+  level: number;
+  items: number[];
+  isMe: boolean;
 }
 
 export interface FormSummary {
@@ -124,6 +143,7 @@ export interface Profile {
   history?: MatchSummary[];
   form?: FormSummary;
   championStats?: ChampionStat[];
+  championStatsByQueue?: { solo: ChampionStat[]; flex: ChampionStat[] };
   matchups?: MatchupRecord[];
 }
 

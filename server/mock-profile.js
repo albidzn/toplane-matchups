@@ -4,7 +4,7 @@
 // states (each returning a configured-but-erroring response, like the real
 // client would after a failed refresh).
 
-import { aggregateMatches } from "./profile-stats.js";
+import { aggregateMatches, championStatsByQueue } from "./profile-stats.js";
 
 const POOL = ["Sett", "Ambessa", "Garen", "DrMundo", "Mordekaiser", "KSante", "Ornn"];
 const ENEMIES = [
@@ -44,6 +44,37 @@ function buildMockLpHistory(rand, entry) {
   return out;
 }
 
+const MOCK_ROLES = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+const MOCK_OTHERS = ["LeeSin", "Ahri", "Jinx", "Thresh", "Vi", "Syndra", "Caitlyn", "Nautilus", "Sejuani", "Zed"];
+const MOCK_NAMES = ["Naturalswagger", "psiko", "Spearyus", "Trigger", "lobby pacientov", "Curborn", "MosR", "Azuro", "NEYPALL", "Keklex"];
+
+function buildMockPlayers(rand, { champion, opponentChamp, win, kills, deaths, assists, durationSec, cs, gold, damage }) {
+  const minutes = durationSec / 60;
+  return Array.from({ length: 10 }, (_, i) => {
+    const mine = i < 5;
+    const role = MOCK_ROLES[i % 5];
+    const isMe = mine && role === "TOP";
+    const k = isMe ? kills : Math.floor(rand() * 12);
+    const d = isMe ? deaths : Math.floor(rand() * 9);
+    return {
+      name: isMe ? "PreviewSummoner" : MOCK_NAMES[i],
+      champion: isMe ? champion : role === "TOP" ? opponentChamp : MOCK_OTHERS[(i + Math.floor(rand() * 5)) % MOCK_OTHERS.length],
+      position: role,
+      teamId: mine ? 100 : 200,
+      win: mine ? win : !win,
+      kills: k,
+      deaths: d,
+      assists: isMe ? assists : Math.floor(rand() * 14),
+      cs: isMe ? cs : Math.floor(minutes * (role === "UTILITY" ? 1.5 : 5 + rand() * 3)),
+      damage: isMe ? damage : Math.floor(8000 + rand() * 30000),
+      gold: isMe ? gold : Math.floor(8000 + rand() * 8000),
+      level: Math.min(18, Math.floor(11 + minutes / 4 + rand() * 2)),
+      items: Array.from({ length: 7 }, () => 0),
+      isMe,
+    };
+  });
+}
+
 function buildMockMatches(rand, count) {
   const matches = [];
   const now = Date.now();
@@ -57,10 +88,13 @@ function buildMockMatches(rand, count) {
     const assists = Math.floor(rand() * 8);
     const durationSec = Math.floor(1400 + rand() * 1400);
     const remake = rand() < 0.03;
+    const cs = Math.floor((durationSec / 60) * (5 + rand() * 3));
+    const gold = Math.floor(8000 + rand() * 8000);
+    const damage = Math.floor(10000 + rand() * 15000);
 
     matches.push({
       matchId: `MOCK_${i}`,
-      queueId: 420,
+      queueId: rand() < 0.28 ? 440 : 420,
       gameEnd: now - offsetMs,
       durationSec: remake ? 220 : durationSec,
       champion,
@@ -69,12 +103,13 @@ function buildMockMatches(rand, count) {
       kills,
       deaths,
       assists,
-      cs: Math.floor((durationSec / 60) * (5 + rand() * 3)),
-      gold: Math.floor(8000 + rand() * 8000),
-      damage: Math.floor(10000 + rand() * 15000),
+      cs,
+      gold,
+      damage,
       items: Array.from({ length: 7 }, () => 0),
       opponent: { champion: opponentChamp },
       remake,
+      players: buildMockPlayers(rand, { champion, opponentChamp, win, kills, deaths, assists, durationSec, cs, gold, damage }),
     });
     // games come in sessions of ~4, ~50min apart, with long breaks in between
     offsetMs += i % 4 === 3 ? (8 + rand() * 14) * 3600 * 1000 : (50 + rand() * 15) * 60 * 1000;
@@ -140,6 +175,7 @@ export function buildMockProfile(mode) {
     history: matches,
     form,
     championStats,
+    championStatsByQueue: championStatsByQueue(matches),
     matchups,
   };
 }

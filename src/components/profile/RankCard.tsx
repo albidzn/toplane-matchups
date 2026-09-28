@@ -58,7 +58,7 @@ export default function RankCard({ title, entry, history }: RankCardProps) {
             </span>
           </div>
 
-          <LpGraph history={history ?? []} />
+          {history && <LpGraph history={history} />}
         </>
       )}
     </div>

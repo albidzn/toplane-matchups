@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
-import { aggregateMatches } from "./profile-stats.js";
+import { aggregateMatches, championStatsByQueue } from "./profile-stats.js";
 import { createLpStore } from "./lp-history.js";
 
 const TTL_MS = 2 * 60 * 1000;
@@ -9,6 +9,10 @@ const TTL_MS = 2 * 60 * 1000;
 // time) doesn't grow forever over months of play. Plenty for accurate
 // matchup/champion stats; oldest games are dropped first.
 const MATCH_CACHE_LIMIT = 1000;
+// Match summaries cached before v1.8 lack the full 10-player scoreboard. Fill
+// them in a few per refresh (newest first) so we stay well inside dev-key rate limits.
+const HISTORY_SIZE = 60;
+const BACKFILL_PER_REFRESH = 15;
 
 function championIdByKey(champions, key) {
   return champions.find((c) => c.key === String(key))?.id ?? null;
@@ -25,6 +29,25 @@ function mapLeagueEntry(entries, queueType) {
     losses: e.losses,
     hotStreak: Boolean(e.hotStreak),
   };
+}
+
+function buildPlayers(participants, puuid, champions) {
+  return participants.map((p) => ({
+    name: p.riotIdGameName || p.summonerName || "",
+    champion: championIdByKey(champions, p.championId) ?? p.championName,
+    position: p.teamPosition || "",
+    teamId: p.teamId,
+    win: Boolean(p.win),
+    kills: p.kills ?? 0,
+    deaths: p.deaths ?? 0,
+    assists: p.assists ?? 0,
+    cs: (p.totalMinionsKilled ?? 0) + (p.neutralMinionsKilled ?? 0),
+    damage: p.totalDamageDealtToChampions ?? 0,
+    gold: p.goldEarned ?? 0,
+    level: p.champLevel ?? 0,
+    items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6].map((i) => i ?? 0),
+    isMe: p.puuid === puuid,
+  }));
 }
 
 function buildMatchSummary(match, puuid, champions) {
@@ -61,6 +84,7 @@ function buildMatchSummary(match, puuid, champions) {
       ? { champion: championIdByKey(champions, opponentParticipant.championId) ?? opponentParticipant.championName }
       : null,
     remake,
+    players: buildPlayers(participants, puuid, champions),
   };
 }
 
@@ -153,7 +177,25 @@ export function createProfileService({ dataDir, getChampions }) {
         if (summary) matchCacheData.matches[id] = summary;
       }
 
-      if (newIds.length > 0) {
+      const needPlayers = Object.values(matchCacheData.matches)
+        .sort((a, b) => b.gameEnd - a.gameEnd)
+        .slice(0, HISTORY_SIZE)
+        .filter((m) => !m.players)
+        .slice(0, BACKFILL_PER_REFRESH);
+      let backfilled = 0;
+      for (const m of needPlayers) {
+        try {
+          const summary = buildMatchSummary(await client.getMatch(m.matchId), puuid, champions);
+          if (summary) {
+            matchCacheData.matches[m.matchId] = summary;
+            backfilled++;
+          }
+        } catch {
+          break; // rate limited or transient — retry on the next refresh
+        }
+      }
+
+      if (newIds.length > 0 || backfilled > 0) {
         trimMatchCache(matchCacheData);
         await saveMatchCache(matchCacheData);
       }
@@ -192,9 +234,10 @@ export function createProfileService({ dataDir, getChampions }) {
         lpHistory,
         mastery,
         recent: combined.slice(0, 20),
-        history: combined.slice(0, 60),
+        history: combined.slice(0, HISTORY_SIZE),
         form,
         championStats,
+        championStatsByQueue: championStatsByQueue(combined),
         matchups,
       };
 

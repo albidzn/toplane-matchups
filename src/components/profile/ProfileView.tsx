@@ -1,12 +1,15 @@
 import type { Champion, Profile } from "../../lib/types";
 import { profileIconUrl } from "../../lib/champions";
 import { formatRelativeTime } from "../../lib/profile";
+import { filterByQueue, type QueueFilter } from "../../lib/queue-filter";
+import { useStickyState } from "../../hooks/useStickyState";
 import RemoteImg from "./RemoteImg";
 import ProfileSetup from "./ProfileSetup";
 import RankCard from "./RankCard";
 import SummaryCard from "./SummaryCard";
 import ChampionStats from "./ChampionStats";
 import MatchList from "./MatchList";
+import QueueFilterTabs from "./QueueFilterTabs";
 
 interface ProfileViewProps {
   profile: Profile | null;
@@ -29,6 +32,8 @@ export default function ProfileView({
   poolIds,
   onOpenSettings,
 }: ProfileViewProps) {
+  const [queue, setQueue] = useStickyState<QueueFilter>("lm.profile.queue", "all");
+
   if (loading && !profile) {
     return (
       <div className="flex h-full animate-fade-in flex-col items-center justify-center gap-3 text-slate-500">
@@ -48,6 +53,11 @@ export default function ProfileView({
       </div>
     );
   }
+
+  const history = profile.history ?? profile.recent ?? [];
+  const filteredHistory = filterByQueue(history, queue);
+  const championStats =
+    queue === "all" ? (profile.championStats ?? []) : (profile.championStatsByQueue?.[queue] ?? profile.championStats ?? []);
 
   return (
     <div className="scrollbar-thin h-full animate-fade-in overflow-y-auto pr-1">
@@ -104,16 +114,24 @@ export default function ProfileView({
         </div>
       )}
 
-      <div className="mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] sm:grid-cols-2">
-        <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo} />
-        <RankCard title="Ranked Flex" entry={profile.ranked?.flex} history={profile.lpHistory?.flex} />
+      <div className="mb-3 flex animate-fade-slide-up items-center justify-between gap-3 [animation-delay:20ms]">
+        <QueueFilterTabs value={queue} onChange={setQueue} />
+      </div>
+
+      <div
+        className={`mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] ${queue === "all" ? "sm:grid-cols-2" : ""}`}
+      >
+        {queue !== "flex" && (
+          <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo ?? []} />
+        )}
+        {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />}
       </div>
 
       <div className="space-y-4 pb-2">
-        <SummaryCard recent={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
-        <MatchList matches={profile.history ?? profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
+        <SummaryCard recent={filteredHistory.slice(0, 20)} champions={champions} ddragonVersion={ddragonVersion} />
+        <MatchList matches={filteredHistory} champions={champions} ddragonVersion={ddragonVersion} />
         <ChampionStats
-          championStats={profile.championStats ?? []}
+          championStats={championStats}
           mastery={profile.mastery ?? []}
           poolIds={poolIds}
           champions={champions}

@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { LpSnapshot } from "../../lib/types";
 import { buildLpSeries, lpAxisLabel } from "../../lib/lp";
 import { rankLabel } from "../../lib/profile";
@@ -8,18 +8,30 @@ interface LpGraphProps {
   days?: number;
 }
 
-const W = 320;
-const H = 132;
+const H = 140;
 const PAD = { left: 34, right: 8, top: 8, bottom: 20 };
 
 export default function LpGraph({ history, days = 30 }: LpGraphProps) {
   const gradId = useId();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(320);
+  const W = Math.max(240, width);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const update = () => setWidth(Math.round(el.clientWidth));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const now = history.length ? Math.max(Date.now(), history[history.length - 1].t) : Date.now();
   const series = useMemo(() => buildLpSeries(history, now, days), [history, now, days]);
 
   if (!series) {
     return (
-      <div className="mt-3 border-t border-ink-800 pt-3 text-xs text-slate-500">
+      <div ref={wrapRef} className="mt-3 border-t border-ink-800 pt-3 text-xs text-slate-500">
         LP history starts now — the graph fills in as your LP changes.
       </div>
     );
@@ -52,7 +64,7 @@ export default function LpGraph({ history, days = 30 }: LpGraphProps) {
   ];
 
   return (
-    <div className="mt-3 border-t border-ink-800 pt-3">
+    <div ref={wrapRef} className="mt-3 border-t border-ink-800 pt-3">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-slate-400">Last {days}d</span>
@@ -65,7 +77,7 @@ export default function LpGraph({ history, days = 30 }: LpGraphProps) {
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full text-hextech-400" role="img" aria-label={`LP over the last ${days} days`}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="block text-hextech-400" role="img" aria-label={`LP over the last ${days} days`}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />

@@ -4,7 +4,7 @@ import { formatRelativeTime } from "../../lib/profile";
 import RemoteImg from "./RemoteImg";
 import ProfileSetup from "./ProfileSetup";
 import RankCard from "./RankCard";
-import FormCard from "./FormCard";
+import SummaryCard from "./SummaryCard";
 import ChampionStats from "./ChampionStats";
 import MatchList from "./MatchList";
 
@@ -104,13 +104,14 @@ export default function ProfileView({
         </div>
       )}
 
-      <div className="mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] sm:grid-cols-3">
+      <div className="mb-4 grid animate-fade-slide-up grid-cols-1 gap-3 [animation-delay:40ms] sm:grid-cols-2">
         <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} />
         <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />
-        <FormCard form={profile.form} recent={profile.recent ?? []} />
       </div>
 
-      <div className="grid animate-fade-slide-up grid-cols-1 gap-4 [animation-delay:80ms] lg:grid-cols-2">
+      <div className="space-y-4 pb-2">
+        <SummaryCard recent={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
+        <MatchList matches={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
         <ChampionStats
           championStats={profile.championStats ?? []}
           mastery={profile.mastery ?? []}
@@ -118,7 +119,6 @@ export default function ProfileView({
           champions={champions}
           ddragonVersion={ddragonVersion}
         />
-        <MatchList matches={profile.recent ?? []} champions={champions} ddragonVersion={ddragonVersion} />
       </div>
     </div>
   );

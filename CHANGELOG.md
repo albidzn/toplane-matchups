@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.5.0] - 2026-09-28
+
+### Changed
+- **Profile tab layout, deeplol-style**: ranked cards on top, then a new summary panel (winrate donut, average KDA/CS, your most-played champions, role distribution, W/L strip), then the match history, and the champion stats now sit at the bottom (collapsed to the top 8, expandable).
+- Match history rows now show your role, victory/defeat, KDA with ratio and CS (per minute), and no longer scroll inside their own box.
+
 ## [1.4.0] - 2026-09-28
 
 ### Added

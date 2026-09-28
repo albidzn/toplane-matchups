@@ -1,6 +1,9 @@
+import { useState } from "react";
 import type { Champion, ChampionStat, MasteryEntry } from "../../lib/types";
 import { kdaRatio, winrate } from "../../lib/profile";
 import ChampIcon from "../ChampIcon";
+
+const COLLAPSED_COUNT = 8;
 
 interface ChampionStatsProps {
   championStats: ChampionStat[];
@@ -17,10 +20,12 @@ export default function ChampionStats({
   champions,
   ddragonVersion,
 }: ChampionStatsProps) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? championStats : championStats.slice(0, COLLAPSED_COUNT);
   const nameOf = (id: string) => champions.find((c) => c.id === id)?.name ?? id;
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-ink-700 bg-ink-900/60 p-4">
+    <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-4 [animation-delay:140ms]">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Champion stats</h3>
 
       {mastery.length > 0 && (
@@ -39,8 +44,8 @@ export default function ChampionStats({
           No games recorded yet.
         </div>
       ) : (
-        <div className="scrollbar-thin -mr-1 max-h-[420px] flex-1 space-y-1.5 overflow-y-auto pr-1 lg:max-h-none">
-          {championStats.map((c, i) => {
+        <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 lg:grid-cols-2">
+          {visible.map((c, i) => {
             const wr = winrate(c.wins, c.games - c.wins);
             return (
               <div
@@ -77,6 +82,15 @@ export default function ChampionStats({
             );
           })}
         </div>
+      )}
+
+      {championStats.length > COLLAPSED_COUNT && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-3 w-full rounded-lg border border-ink-700 py-1.5 text-xs font-medium text-slate-400 transition-all hover:border-gold-500/40 hover:text-gold-400 active:scale-[0.98]"
+        >
+          {expanded ? "Show less" : `Show all ${championStats.length} champions`}
+        </button>
       )}
     </div>
   );

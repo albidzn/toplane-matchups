@@ -1,6 +1,7 @@
 import type { Champion, MatchSummary } from "../../lib/types";
 import { itemIconUrl } from "../../lib/champions";
-import { formatDuration, formatKda, formatRelativeTime } from "../../lib/profile";
+import { formatDuration, formatRelativeTime, kdaRatio } from "../../lib/profile";
+import { positionLabel } from "../../lib/live";
 import ChampIcon from "../ChampIcon";
 
 interface MatchListProps {
@@ -13,15 +14,17 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
   const nameOf = (id: string) => champions.find((c) => c.id === id)?.name ?? id;
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-ink-700 bg-ink-900/60 p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Recent matches</h3>
+    <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-4 [animation-delay:100ms]">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Match history <span className="text-slate-600">· {matches.length} games</span>
+      </h3>
 
       {matches.length === 0 ? (
         <div className="flex flex-1 items-center justify-center py-6 text-center text-sm text-slate-500">
           No games recorded yet.
         </div>
       ) : (
-        <div className="scrollbar-thin -mr-1 max-h-[520px] flex-1 space-y-1.5 overflow-y-auto pr-1 lg:max-h-none">
+        <div className="space-y-1.5">
           {matches.map((m, i) => (
             <div
               key={m.matchId}
@@ -54,7 +57,19 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
                   )}
                 </div>
                 <div className="text-xs text-slate-500">
-                  {formatKda(m.kills, m.deaths, m.assists)} · {(m.cs / (m.durationSec / 60 || 1)).toFixed(1)} cs/min
+                  {positionLabel(m.position) || "—"} · {m.remake ? "Remake" : m.win ? "Victory" : "Defeat"}
+                </div>
+              </div>
+
+              <div className="w-32 shrink-0 text-center">
+                <div className="text-sm font-semibold text-slate-200">
+                  {m.kills} / <span className="text-red-400">{m.deaths}</span> / {m.assists}
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  <span className={kdaRatio(m.kills, m.deaths, m.assists) >= 3 ? "text-emerald-400" : undefined}>
+                    {kdaRatio(m.kills, m.deaths, m.assists).toFixed(2)}
+                  </span>{" "}
+                  · {m.cs} cs ({(m.cs / (m.durationSec / 60 || 1)).toFixed(1)})
                 </div>
               </div>
 
@@ -69,7 +84,7 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
                 })}
               </div>
 
-              <div className="shrink-0 text-right text-xs text-slate-500">
+              <div className="w-16 shrink-0 text-right text-xs text-slate-500">
                 <div>{formatDuration(m.durationSec)}</div>
                 <div>{m.remake ? "Remake" : formatRelativeTime(m.gameEnd)}</div>
               </div>

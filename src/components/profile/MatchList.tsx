@@ -14,9 +14,13 @@ interface MatchListProps {
   ddragonVersion: string | null;
 }
 
+const PAGE = 15;
+
 export default function MatchList({ matches, champions, ddragonVersion }: MatchListProps) {
   const nameOf = (id: string) => champions.find((c) => c.id === id)?.name ?? id;
-  const sessions = useMemo(() => groupSessions(matches), [matches]);
+  const [visible, setVisible] = useState(PAGE);
+  const shown = useMemo(() => matches.slice(0, visible), [matches, visible]);
+  const sessions = useMemo(() => groupSessions(shown), [shown]);
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
@@ -155,6 +159,15 @@ export default function MatchList({ matches, champions, ddragonVersion }: MatchL
               </div>
             </section>
           ))}
+
+          {matches.length > visible && (
+            <button
+              onClick={() => setVisible((v) => v + PAGE)}
+              className="w-full rounded-lg border border-ink-700 py-2 text-xs font-medium text-slate-400 transition-all hover:border-gold-500/40 hover:text-gold-400 active:scale-[0.98]"
+            >
+              Show more games ({matches.length - visible} more)
+            </button>
+          )}
         </div>
       )}
     </div>

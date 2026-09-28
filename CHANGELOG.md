@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.11.0] - 2026-09-28
+
+### Changed
+- **Profile tab shows your recent games straight away**: the match history now sits directly under the rank cards (the summary and champion stats moved below it), the queue filter shares the header row, and the LP graph sits beside the rank info instead of below it. About six games are visible without scrolling on a typical second-monitor window.
+- The match history loads 15 games at a time with a "Show more games" button.
+
 ## [1.10.0] - 2026-09-28
 
 ### Changed

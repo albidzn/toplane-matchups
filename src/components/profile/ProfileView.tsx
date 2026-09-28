@@ -62,14 +62,14 @@ export default function ProfileView({
   return (
     <div className="scrollbar-thin h-full animate-fade-in overflow-y-auto pr-1">
       {/* Hero */}
-      <div className="mb-4 flex animate-fade-slide-up flex-wrap items-center gap-4 rounded-2xl border border-ink-700 bg-ink-900/60 p-4">
+      <div className="mb-3 flex animate-fade-slide-up flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-ink-700 bg-ink-900/60 p-3">
         {profile.account && ddragonVersion && (
           <div className="relative shrink-0">
             <RemoteImg
               src={profileIconUrl(ddragonVersion, profile.account.profileIconId)}
               alt=""
-              className="h-16 w-16 rounded-2xl ring-2 ring-ink-600"
-              fallback={<div className="h-16 w-16 rounded-2xl bg-ink-800" />}
+              className="h-14 w-14 rounded-2xl ring-2 ring-ink-600"
+              fallback={<div className="h-14 w-14 rounded-2xl bg-ink-800" />}
             />
             <span className="absolute -bottom-1.5 -right-1.5 rounded-full bg-ink-950 px-1.5 py-0.5 text-[10px] font-bold text-gold-400 ring-1 ring-gold-500/40">
               {profile.account.level}
@@ -77,7 +77,7 @@ export default function ProfileView({
           </div>
         )}
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-40">
           {profile.account && (
             <h2 className="truncate font-display text-lg font-bold text-slate-100">
               {profile.account.gameName} <span className="text-slate-500">#{profile.account.tagLine}</span>
@@ -85,6 +85,8 @@ export default function ProfileView({
           )}
           <div className="text-xs text-slate-500">Updated {formatRelativeTime(profile.updatedAt)}</div>
         </div>
+
+        <QueueFilterTabs value={queue} onChange={setQueue} />
 
         <button
           onClick={onRefresh}
@@ -114,11 +116,7 @@ export default function ProfileView({
         </div>
       )}
 
-      <div className="mb-3 flex animate-fade-slide-up items-center justify-between gap-3 [animation-delay:20ms]">
-        <QueueFilterTabs value={queue} onChange={setQueue} />
-      </div>
-
-      <div className="mb-4 animate-fade-slide-up space-y-3 [animation-delay:40ms]">
+      <div className="mb-3 animate-fade-slide-up space-y-3 [animation-delay:40ms]">
         {queue !== "flex" && (
           <RankCard
             title="Ranked Solo/Duo"
@@ -132,8 +130,8 @@ export default function ProfileView({
       </div>
 
       <div className="space-y-4 pb-2">
-        <SummaryCard recent={filteredHistory.slice(0, 20)} champions={champions} ddragonVersion={ddragonVersion} />
         <MatchList matches={filteredHistory} champions={champions} ddragonVersion={ddragonVersion} />
+        <SummaryCard recent={filteredHistory.slice(0, 20)} champions={champions} ddragonVersion={ddragonVersion} />
         <ChampionStats
           championStats={championStats}
           mastery={profile.mastery ?? []}

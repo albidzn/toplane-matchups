@@ -116,7 +116,8 @@ export default function RankCard({ title, entry, history, peak, apexCutoffs, com
           <div className="text-sm text-slate-500">Unranked</div>
         </div>
       ) : (
-        <>
+        <div className={history ? "grid gap-4 sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : ""}>
+          <div>
           <div className="flex items-center gap-3">
             <RemoteImg
               src={rankEmblemUrl(entry.tier)}
@@ -156,8 +157,16 @@ export default function RankCard({ title, entry, history, peak, apexCutoffs, com
             </span>
           </div>
 
-          {history && <LpGraph history={history} peak={peak} cutoffs={apexCutoffs} />}
-        </>
+            </div>
+          {history && (
+            <LpGraph
+              history={history}
+              peak={peak}
+              cutoffs={apexCutoffs}
+              className="border-t border-ink-800 pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0"
+            />
+          )}
+        </div>
       )}
     </div>
   );

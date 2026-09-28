@@ -8,13 +8,14 @@ interface LpGraphProps {
   /** All-time peak; wins over the 30-day peak when higher. */
   peak?: LpSnapshot | null;
   cutoffs?: ApexCutoffs | null;
+  className?: string;
   days?: number;
 }
 
-const H = 140;
+const H = 128;
 const PAD = { left: 34, right: 8, top: 8, bottom: 20 };
 
-export default function LpGraph({ history, peak, cutoffs, days = 30 }: LpGraphProps) {
+export default function LpGraph({ history, peak, cutoffs, className = "mt-3 border-t border-ink-800 pt-3", days = 30 }: LpGraphProps) {
   const lineGradId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(320);
@@ -34,7 +35,7 @@ export default function LpGraph({ history, peak, cutoffs, days = 30 }: LpGraphPr
 
   if (!series) {
     return (
-      <div ref={wrapRef} className="mt-3 border-t border-ink-800 pt-3 text-xs text-slate-500">
+      <div ref={wrapRef} className={`${className} text-xs text-slate-500`}>
         LP history starts now — the graph fills in as your LP changes.
       </div>
     );
@@ -69,7 +70,7 @@ export default function LpGraph({ history, peak, cutoffs, days = 30 }: LpGraphPr
   ];
 
   return (
-    <div ref={wrapRef} className="mt-3 border-t border-ink-800 pt-3">
+    <div ref={wrapRef} className={className}>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-slate-400">Last {days}d</span>

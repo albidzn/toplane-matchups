@@ -126,12 +126,12 @@ export default function ProfileView({
             apexCutoffs={profile.apexCutoffs}
           />
         )}
-        {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} compact={queue === "all"} />}
+        {queue === "flex" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />}
       </div>
 
       <div className="space-y-4 pb-2">
-        <MatchList matches={filteredHistory} champions={champions} ddragonVersion={ddragonVersion} />
         <SummaryCard recent={filteredHistory.slice(0, 20)} champions={champions} ddragonVersion={ddragonVersion} />
+        <MatchList matches={filteredHistory} champions={champions} ddragonVersion={ddragonVersion} />
         <ChampionStats
           championStats={championStats}
           mastery={profile.mastery ?? []}

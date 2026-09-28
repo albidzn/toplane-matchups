@@ -47,8 +47,8 @@ export default function SummaryCard({ recent, champions, ddragonVersion }: Summa
   const maxRole = Math.max(1, ...summary.roles.map((r) => r.games));
 
   return (
-    <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-4 [animation-delay:60ms]">
-      <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+    <div className="animate-fade-slide-up rounded-2xl border border-ink-700 bg-ink-900/60 p-3 [animation-delay:60ms]">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
         Last {summary.games} games
       </div>
 
@@ -118,7 +118,7 @@ export default function SummaryCard({ recent, champions, ddragonVersion }: Summa
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-1 border-t border-ink-800 pt-3">
+          <div className="mt-3 flex flex-wrap gap-1 border-t border-ink-800 pt-2.5">
             {form.map((m) => (
               <div
                 key={m.matchId}

@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.11.1] - 2026-09-28
+
+### Changed
+- Profile tab: the "Last 20 games" summary is back above the match history, and the Flex rank card now only appears on the Flex filter, so the "All" view stays compact.
+
 ## [1.11.0] - 2026-09-28
 
 ### Changed

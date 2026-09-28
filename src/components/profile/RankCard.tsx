@@ -11,8 +11,6 @@ interface RankCardProps {
   history?: LpSnapshot[];
   peak?: LpSnapshot | null;
   apexCutoffs?: ApexCutoffs | null;
-  /** One slim row instead of the full card — used for the secondary queue. */
-  compact?: boolean;
 }
 
 const APEX = new Set(["MASTER", "GRANDMASTER", "CHALLENGER"]);
@@ -65,44 +63,8 @@ function ApexBar({
   );
 }
 
-export default function RankCard({ title, entry, history, peak, apexCutoffs, compact }: RankCardProps) {
+export default function RankCard({ title, entry, history, peak, apexCutoffs }: RankCardProps) {
   const wr = entry ? winrate(entry.wins, entry.losses) : 0;
-
-  if (compact) {
-    return (
-      <div className="flex items-center gap-3 rounded-2xl border border-ink-700 bg-ink-900/60 px-4 py-3 transition-colors duration-150 hover:border-ink-600">
-        {entry ? (
-          <RemoteImg
-            src={rankEmblemUrl(entry.tier)}
-            alt={entry.tier}
-            className="h-11 w-11 shrink-0 drop-shadow-lg"
-            fallback={<div className="h-11 w-11 shrink-0 rounded-full bg-ink-800" />}
-          />
-        ) : (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink-800 text-sm opacity-40">?</div>
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{title}</div>
-          {entry ? (
-            <div className="truncate font-display text-sm font-bold text-slate-100">
-              {rankLabel(entry)} <span className="font-sans text-xs font-normal text-slate-500">· {entry.lp} LP</span>
-              {entry.hotStreak && <span className="ml-1.5 text-xs">🔥</span>}
-            </div>
-          ) : (
-            <div className="text-sm text-slate-500">Unranked</div>
-          )}
-        </div>
-        {entry && (
-          <div className="shrink-0 text-right text-xs">
-            <div className="text-slate-400">
-              {entry.wins}W {entry.losses}L
-            </div>
-            <div className={wr >= 50 ? "font-semibold text-emerald-400" : "font-semibold text-red-400"}>{wr}%</div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="rounded-2xl border border-ink-700 bg-ink-900/60 p-4 transition-colors duration-150 hover:border-ink-600">

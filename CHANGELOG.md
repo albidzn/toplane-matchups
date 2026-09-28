@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.13.1] - 2026-09-28
+
+### Fixed
+- Arena queue-id discovery now asks the League client for its own queue catalog (`/lol-game-queues/v1/queues`) instead of a hardcoded list, so a queue like "Bravery Arena" (1740) that isn't in Riot's static queue list gets picked up too. Discovered ids are remembered on disk so this keeps working without the client open.
+
 ## [1.13.0] - 2026-09-28
 
 ### Added

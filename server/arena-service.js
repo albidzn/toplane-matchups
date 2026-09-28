@@ -1,7 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
-import { ARENA_QUEUE_IDS, buildArenaMatchEntry, aggregateArenaStats } from "./arena.js";
+import { createLcuConnector } from "./lcu.js";
+import { STATIC_ARENA_QUEUE_IDS, arenaQueueIdsFromLcuQueues, buildArenaMatchEntry, aggregateArenaStats } from "./arena.js";
 
 const TTL_MS = 2 * 60 * 1000;
 const DISCOVERY_COUNT = 20; // recent ids checked every refresh, so a just-finished game shows up fast
@@ -10,6 +11,8 @@ const BACKFILL_PER_REFRESH = 20; // full matches fetched per refresh, to stay we
 
 export function createArenaService({ dataDir, getChampions }) {
   const cachePath = path.join(dataDir, "arena-cache.json");
+  const queueIdsPath = path.join(dataDir, "arena-queue-ids.json");
+  const lcu = createLcuConnector();
 
   let memArena = null;
   let memFetchedAt = 0;
@@ -28,6 +31,37 @@ export function createArenaService({ dataDir, getChampions }) {
     const tmp = path.join(dataDir, `.arena-cache.${process.pid}.tmp`);
     await fs.writeFile(tmp, JSON.stringify(cache), "utf-8");
     await fs.rename(tmp, cachePath);
+  }
+
+  /**
+   * Which queue ids count as Arena. The League client's own catalog is the source of truth (it
+   * knows every queue id it's ever offered, including old event variants), so it wins when
+   * reachable; ids seen there are remembered on disk so a later refresh without the client still
+   * knows about them, and the static list is only the fallback for a first run with no client
+   * and no disk cache yet. Ids already known are never forgotten, only added to.
+   */
+  async function resolveArenaQueueIds() {
+    const known = new Set(STATIC_ARENA_QUEUE_IDS);
+    try {
+      const saved = JSON.parse(await fs.readFile(queueIdsPath, "utf-8"));
+      (saved ?? []).forEach((id) => known.add(id));
+    } catch {
+      // no disk cache yet — static list stands
+    }
+    try {
+      if (await lcu.ensureConnected()) {
+        const queues = await lcu.get("/lol-game-queues/v1/queues");
+        const before = known.size;
+        arenaQueueIdsFromLcuQueues(queues).forEach((id) => known.add(id));
+        if (known.size > before) {
+          await fs.mkdir(dataDir, { recursive: true });
+          await fs.writeFile(queueIdsPath, JSON.stringify([...known]), "utf-8").catch(() => {});
+        }
+      }
+    } catch {
+      // client not reachable — disk cache + static list stand for this refresh
+    }
+    return [...known];
   }
 
   async function fetchFresh() {
@@ -69,8 +103,10 @@ export function createArenaService({ dataDir, getChampions }) {
       let cache = await loadCache();
       if (!cache || cache.puuid !== puuid) cache = { puuid, entries: {}, scan: {} };
 
+      const arenaQueueIds = await resolveArenaQueueIds();
+
       const candidateIds = new Set();
-      for (const queue of ARENA_QUEUE_IDS) {
+      for (const queue of arenaQueueIds) {
         try {
           const recent = await client.getMatchIds(puuid, DISCOVERY_COUNT, { queue, start: 0 });
           recent.forEach((id) => candidateIds.add(id));
@@ -78,7 +114,7 @@ export function createArenaService({ dataDir, getChampions }) {
           // transient — this queue's discovery just skips this refresh
         }
       }
-      for (const queue of ARENA_QUEUE_IDS) {
+      for (const queue of arenaQueueIds) {
         const state = cache.scan[queue] ?? { offset: 0, done: false };
         if (state.done) continue;
         try {
@@ -106,7 +142,7 @@ export function createArenaService({ dataDir, getChampions }) {
       await saveCache(cache);
 
       const stats = aggregateArenaStats(Object.values(cache.entries).filter((e) => !e.skip));
-      const backfillComplete = ARENA_QUEUE_IDS.every((q) => cache.scan[q]?.done);
+      const backfillComplete = arenaQueueIds.every((q) => cache.scan[q]?.done);
 
       const result = { configured: true, updatedAt: Date.now(), stats, backfillComplete };
       memArena = result;

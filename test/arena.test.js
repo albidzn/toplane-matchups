@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isArenaMatch, buildArenaMatchEntry, aggregateArenaStats } from "../server/arena.js";
+import { isArenaMatch, buildArenaMatchEntry, aggregateArenaStats, arenaQueueIdsFromLcuQueues } from "../server/arena.js";
 
 const champions = [
   { id: "Sett", name: "Sett", key: "875" },
@@ -42,6 +42,27 @@ describe("buildArenaMatchEntry", () => {
   it("falls back to the raw championName when the key isn't in the champion list", () => {
     const entry = buildArenaMatchEntry(match({ championId: 999999 }), "p1", champions);
     expect(entry.champion).toBe("Sett"); // championName from the fixture
+  });
+});
+
+describe("arenaQueueIdsFromLcuQueues", () => {
+  it("keeps only queues whose gameMode is CHERRY", () => {
+    const queues = [
+      { id: 1700, gameMode: "CHERRY", description: "Arena" },
+      { id: 1740, gameMode: "CHERRY", description: "Bravery Arena" },
+      { id: 420, gameMode: "CLASSIC", description: "Ranked Solo" },
+      { id: 450, gameMode: "ARAM", description: "ARAM" },
+    ];
+    expect(arenaQueueIdsFromLcuQueues(queues)).toEqual([1700, 1740]);
+  });
+
+  it("handles missing/empty input", () => {
+    expect(arenaQueueIdsFromLcuQueues(null)).toEqual([]);
+    expect(arenaQueueIdsFromLcuQueues([])).toEqual([]);
+  });
+
+  it("is case-insensitive on gameMode and skips entries without a numeric id", () => {
+    expect(arenaQueueIdsFromLcuQueues([{ id: 1750, gameMode: "cherry" }, { gameMode: "CHERRY" }])).toEqual([1750]);
   });
 });
 

@@ -6,6 +6,7 @@ data/match-cache.json
 data/lp-history.json
 data/apex-cutoffs.json
 data/arena-cache.json
+data/arena-queue-ids.json
 data/settings.json
 .env
 .env.*

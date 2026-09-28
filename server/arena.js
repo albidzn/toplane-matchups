@@ -1,9 +1,18 @@
 // Arena ("CHERRY") aggregation — kept separate from profile-stats.js because Arena games
 // aren't "ranked" and need their own match-id discovery (see arena-service.js). The queue id
-// Riot assigns to Arena has changed across its beta/season revisions (seen: 1700, 1710, 1750),
-// so ARENA_QUEUE_IDS is only a hint for *discovering* candidate match ids — the actual filter
-// is always the match's own `info.gameMode === "CHERRY"`, which has stayed stable.
-export const ARENA_QUEUE_IDS = [1700, 1710, 1750];
+// Riot assigns to Arena keeps changing across its beta/season/event revisions — this static
+// list (confirmed via the League client's own /lol-game-queues/v1/queues, which knows every
+// queue id it's ever offered) is only the fallback for when that endpoint isn't reachable;
+// arena-service.js prefers the live list and remembers it on disk. Either way, the actual
+// per-match filter is always `info.gameMode === "CHERRY"`, which has stayed stable throughout.
+export const STATIC_ARENA_QUEUE_IDS = [1700, 1704, 1710, 1740, 1750];
+
+/** Extracts Arena queue ids from the League client's own queue catalog (`/lol-game-queues/v1/queues`). */
+export function arenaQueueIdsFromLcuQueues(queues) {
+  return (queues ?? [])
+    .filter((q) => (q?.gameMode ?? "").toUpperCase() === "CHERRY" && Number.isFinite(q?.id))
+    .map((q) => q.id);
+}
 
 export function isArenaMatch(match) {
   return match?.info?.gameMode === "CHERRY";

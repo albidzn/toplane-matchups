@@ -148,7 +148,9 @@ export function buildMockProfile(mode) {
   const { form, championStats, matchups } = aggregateMatches(matches);
 
   const ranked = {
-    solo: { tier: "GOLD", rank: "II", lp: 45, wins: 63, losses: 58, hotStreak: true },
+    solo: process.env.RIOT_MOCK_APEX
+      ? { tier: "MASTER", rank: "I", lp: 6, wins: 134, losses: 127, hotStreak: false }
+      : { tier: "GOLD", rank: "II", lp: 45, wins: 63, losses: 58, hotStreak: true },
     flex: { tier: "SILVER", rank: "I", lp: 12, wins: 8, losses: 9, hotStreak: false },
   };
 
@@ -162,6 +164,7 @@ export function buildMockProfile(mode) {
       profileIconId: 4568,
     },
     ranked,
+    apexCutoffs: process.env.RIOT_MOCK_APEX ? { grandmaster: 1719, challenger: 2312 } : null,
     lpHistory: {
       solo: buildMockLpHistory(rand, ranked.solo),
       flex: buildMockLpHistory(rand, ranked.flex),

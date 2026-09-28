@@ -3,6 +3,7 @@ import path from "node:path";
 import { createRiotClient, RiotApiError } from "./riot.js";
 import { aggregateMatches, championStatsByQueue } from "./profile-stats.js";
 import { createLpStore } from "./lp-history.js";
+import { APEX_TIERS, cutoffFromLeague } from "./apex.js";
 
 const TTL_MS = 2 * 60 * 1000;
 // Cap how many matches we keep on disk so the cache file (and JSON parse
@@ -13,6 +14,7 @@ const MATCH_CACHE_LIMIT = 1000;
 // them in a few per refresh (newest first) so we stay well inside dev-key rate limits.
 const HISTORY_SIZE = 60;
 const BACKFILL_PER_REFRESH = 15;
+const APEX_CUTOFF_TTL_MS = 30 * 60 * 1000;
 
 function championIdByKey(champions, key) {
   return champions.find((c) => c.key === String(key))?.id ?? null;
@@ -95,6 +97,21 @@ export function createProfileService({ dataDir, getChampions }) {
   let memProfile = null; // last successful (error-free) profile
   let memFetchedAt = 0;
   let inFlight = null; // dedupe concurrent refreshes
+  let apexCache = { at: 0, value: null };
+
+  /** GM/Challenger LP cutoffs — only fetched for Master+ players, cached since they barely move. */
+  async function getApexCutoffs(client, soloEntry) {
+    if (!soloEntry || !APEX_TIERS.has(soloEntry.tier)) return null;
+    if (apexCache.value && Date.now() - apexCache.at < APEX_CUTOFF_TTL_MS) return apexCache.value;
+    try {
+      const grandmaster = cutoffFromLeague(await client.getApexLeague("grandmaster"));
+      const challenger = cutoffFromLeague(await client.getApexLeague("challenger"));
+      apexCache = { at: Date.now(), value: { grandmaster, challenger } };
+    } catch {
+      // keep serving the last known cutoffs (or none) rather than failing the whole profile
+    }
+    return apexCache.value;
+  }
 
   async function loadMatchCache() {
     try {
@@ -211,6 +228,7 @@ export function createProfileService({ dataDir, getChampions }) {
         flex: mapLeagueEntry(leagueEntries, "RANKED_FLEX_SR"),
       };
 
+      const apexCutoffs = await getApexCutoffs(client, ranked.solo);
       const lpHistory = await lpStore.record(puuid, ranked).catch(() => ({ solo: [], flex: [] }));
 
       const mastery = masteryRaw.map((m) => ({
@@ -231,6 +249,7 @@ export function createProfileService({ dataDir, getChampions }) {
           profileIconId: summoner.profileIconId,
         },
         ranked,
+        apexCutoffs,
         lpHistory,
         mastery,
         recent: combined.slice(0, 20),

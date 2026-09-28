@@ -131,6 +131,11 @@ export function createRiotClient({ apiKey, platform }) {
     region,
     platform,
 
+    /** tier: "grandmaster" | "challenger" — the full solo-queue league (used to derive the LP cutoff). */
+    getApexLeague(tier) {
+      return requestPlatform(`/lol/league/v4/${tier}leagues/by-queue/RANKED_SOLO_5x5`);
+    },
+
     getAccountByRiotId(gameName, tagLine) {
       return requestRegion(
         `/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`

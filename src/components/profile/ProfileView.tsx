@@ -124,6 +124,7 @@ export default function ProfileView({
         {queue !== "flex" && (
           <RankCard title="Ranked Solo/Duo" entry={profile.ranked?.solo} history={profile.lpHistory?.solo ?? []}
             peak={profile.lpHistory?.peak?.solo}
+            apexCutoffs={profile.apexCutoffs}
           />
         )}
         {queue !== "solo" && <RankCard title="Ranked Flex" entry={profile.ranked?.flex} />}

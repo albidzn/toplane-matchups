@@ -22,6 +22,41 @@ export function lpAxisLabel(value: number): string {
   return `${TIERS[tier][0]}${4 - division}`;
 }
 
+export interface ApexProgress {
+  lower: { label: string; lp: number };
+  upper: { label: string; lp: number } | null; // null: Challenger has no cap
+  /** 0..1 position of the player between the bounds; null when there is no upper bound. */
+  fraction: number | null;
+}
+
+/** Master → Grandmaster → Challenger progress bar bounds from the current LP cutoffs. Null for non-apex or unknown cutoffs. */
+export function apexProgress(
+  entry: { tier: string; lp: number },
+  cutoffs: { grandmaster: number | null; challenger: number | null } | null | undefined
+): ApexProgress | null {
+  if (!cutoffs) return null;
+  const tier = entry.tier.toUpperCase();
+  let lower: ApexProgress["lower"];
+  let upper: ApexProgress["upper"];
+  if (tier === "MASTER") {
+    lower = { label: "M", lp: 0 };
+    upper = cutoffs.grandmaster != null ? { label: "GM", lp: cutoffs.grandmaster } : null;
+  } else if (tier === "GRANDMASTER") {
+    if (cutoffs.grandmaster == null) return null;
+    lower = { label: "GM", lp: cutoffs.grandmaster };
+    upper = cutoffs.challenger != null ? { label: "C", lp: cutoffs.challenger } : null;
+  } else if (tier === "CHALLENGER") {
+    if (cutoffs.challenger == null) return null;
+    lower = { label: "C", lp: cutoffs.challenger };
+    upper = null;
+  } else {
+    return null;
+  }
+  const span = upper ? upper.lp - lower.lp : 0;
+  const fraction = upper && span > 0 ? Math.min(1, Math.max(0, (entry.lp - lower.lp) / span)) : null;
+  return { lower, upper, fraction };
+}
+
 export interface LpSeries {
   /** Step points inside the window, oldest first (the first sits exactly at the window start when history predates it). */
   points: { t: number; value: number }[];

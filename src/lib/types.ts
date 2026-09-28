@@ -136,6 +136,7 @@ export interface Profile {
   updatedAt: number;
   account?: ProfileAccount;
   ranked?: { solo?: RankedEntry; flex?: RankedEntry };
+  apexCutoffs?: { grandmaster: number | null; challenger: number | null } | null;
   lpHistory?: { solo: LpSnapshot[]; flex: LpSnapshot[]; peak?: { solo?: LpSnapshot | null; flex?: LpSnapshot | null } };
   mastery?: MasteryEntry[];
   recent?: MatchSummary[];

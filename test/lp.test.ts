@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { absoluteLp, buildLpSeries, lpAxisLabel } from "../src/lib/lp";
+import { absoluteLp, apexProgress, buildLpSeries, lpAxisLabel } from "../src/lib/lp";
 import { appendSnapshot, updatePeak, absoluteLp as serverAbsoluteLp } from "../server/lp-history.js";
 import type { LpSnapshot } from "../src/lib/types";
 
@@ -117,5 +117,38 @@ describe("updatePeak", () => {
     ]) {
       expect(serverAbsoluteLp(s)).toBe(absoluteLp(s));
     }
+  });
+});
+
+describe("apexProgress", () => {
+  const cutoffs = { grandmaster: 1719, challenger: 2312 };
+
+  it("Master runs from 0 to the GM cutoff", () => {
+    const p = apexProgress({ tier: "MASTER", lp: 6 }, cutoffs)!;
+    expect(p.lower).toEqual({ label: "M", lp: 0 });
+    expect(p.upper).toEqual({ label: "GM", lp: 1719 });
+    expect(p.fraction).toBeCloseTo(6 / 1719);
+  });
+
+  it("Grandmaster runs from the GM to the Challenger cutoff", () => {
+    const p = apexProgress({ tier: "GRANDMASTER", lp: 2000 }, cutoffs)!;
+    expect(p.lower.lp).toBe(1719);
+    expect(p.fraction).toBeCloseTo((2000 - 1719) / (2312 - 1719));
+  });
+
+  it("Challenger has no upper bound", () => {
+    const p = apexProgress({ tier: "CHALLENGER", lp: 2500 }, cutoffs)!;
+    expect(p.upper).toBeNull();
+    expect(p.fraction).toBeNull();
+  });
+
+  it("clamps the marker inside the bar", () => {
+    expect(apexProgress({ tier: "MASTER", lp: 5000 }, cutoffs)!.fraction).toBe(1);
+  });
+
+  it("returns null for non-apex tiers or missing cutoffs", () => {
+    expect(apexProgress({ tier: "DIAMOND", lp: 50 }, cutoffs)).toBeNull();
+    expect(apexProgress({ tier: "MASTER", lp: 50 }, null)).toBeNull();
+    expect(apexProgress({ tier: "GRANDMASTER", lp: 50 }, { grandmaster: null, challenger: 2312 })).toBeNull();
   });
 });

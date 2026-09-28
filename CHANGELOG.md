@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.9.0] - 2026-09-28
+
+### Added
+- **Master / Grandmaster / Challenger progress bar** on the Solo/Duo card, like deeplol: your LP between the current cutoffs (e.g. `M | 0 LP` to `GM | 1719 LP`). The cutoffs come from Riot's live Grandmaster/Challenger leagues and are cached for 30 minutes.
+
 ## [1.8.1] - 2026-09-28
 
 ### Added

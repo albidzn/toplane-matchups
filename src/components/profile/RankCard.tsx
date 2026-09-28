@@ -1,4 +1,5 @@
 import type { LpSnapshot, RankedEntry } from "../../lib/types";
+import { apexProgress } from "../../lib/lp";
 import { rankEmblemUrl } from "../../lib/champions";
 import { rankLabel, winrate } from "../../lib/profile";
 import RemoteImg from "./RemoteImg";
@@ -9,9 +10,51 @@ interface RankCardProps {
   entry?: RankedEntry;
   history?: LpSnapshot[];
   peak?: LpSnapshot | null;
+  apexCutoffs?: { grandmaster: number | null; challenger: number | null } | null;
 }
 
-export default function RankCard({ title, entry, history, peak }: RankCardProps) {
+const APEX = new Set(["MASTER", "GRANDMASTER", "CHALLENGER"]);
+
+function ApexBar({ lp, progress }: { lp: number; progress: NonNullable<ReturnType<typeof apexProgress>> }) {
+  const { lower, upper, fraction } = progress;
+  const pct = (fraction ?? 0) * 100;
+  return (
+    <div className="mt-3">
+      {upper && fraction != null ? (
+        <div className="relative pt-5">
+          <span
+            className="absolute top-0 -translate-x-1/2 text-[11px] font-semibold text-slate-200"
+            style={{ left: `${Math.min(92, Math.max(8, pct))}%` }}
+          >
+            {lp} LP
+          </span>
+          <div className="relative h-1.5 rounded-full bg-ink-800">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-400 transition-[width] duration-700 ease-out"
+              style={{ width: `${pct}%` }}
+            />
+            <div
+              className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-gold-200 bg-gold-500 shadow"
+              style={{ left: `${pct}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+        <span>
+          <span className="font-semibold text-slate-300">{lower.label}</span> | {lower.lp} LP
+        </span>
+        {upper && (
+          <span>
+            <span className="font-semibold text-slate-300">{upper.label}</span> | {upper.lp} LP
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function RankCard({ title, entry, history, peak, apexCutoffs }: RankCardProps) {
   const wr = entry ? winrate(entry.wins, entry.losses) : 0;
 
   return (
@@ -43,12 +86,19 @@ export default function RankCard({ title, entry, history, peak }: RankCardProps)
             </div>
           </div>
 
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-800">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-400 transition-[width] duration-700 ease-out"
-              style={{ width: `${Math.min(100, entry.lp)}%` }}
-            />
-          </div>
+          {APEX.has(entry.tier.toUpperCase()) ? (
+            (() => {
+              const progress = apexProgress(entry, apexCutoffs);
+              return progress ? <ApexBar lp={entry.lp} progress={progress} /> : null;
+            })()
+          ) : (
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-400 transition-[width] duration-700 ease-out"
+                style={{ width: `${Math.min(100, entry.lp)}%` }}
+              />
+            </div>
+          )}
 
           <div className="mt-2.5 flex items-center justify-between text-xs">
             <span className="text-slate-400">

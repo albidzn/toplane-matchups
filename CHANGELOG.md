@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.15.1] - 2026-09-29
+
+### Fixed
+- Arena win counts could stay permanently too high or too low on an account whose cache had matches from before the 1st-place-only fix (v1.13.2) or the pending-queue fix (v1.13.3): a cached match's win/loss used to be baked in at fetch time and never recomputed, so a change to what counts as a "win" never applied to matches already on disk. Cached matches now store the raw placement instead, so today's definition is always applied to every match, and a one-time repair re-fetches anything cached under the old shape.
+
 ## [1.15.0] - 2026-09-29
 
 ### Added

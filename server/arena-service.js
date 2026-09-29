@@ -20,6 +20,8 @@ const BACKFILL_PAGE = 100; // deeper history page size per queue, while backfill
 // heavily-played Arena account the initial backfill can have several hundred candidate matches, and
 // 20/refresh (a 2-minute TTL apart) took the better part of an hour to catch up.
 const BACKFILL_PER_REFRESH = 80;
+// Bump this to force every cache through the one-time repair below on the next refresh.
+const CACHE_SCHEMA_VERSION = 3;
 
 export function createArenaService({ dataDir, getChampions }) {
   const cachePath = path.join(dataDir, "arena-cache.json");
@@ -113,8 +115,30 @@ export function createArenaService({ dataDir, getChampions }) {
       const puuid = account.puuid;
 
       let cache = await loadCache();
-      if (!cache || cache.puuid !== puuid) cache = { puuid, entries: {}, scan: {}, pendingIds: [] };
-      if (!cache.pendingIds) cache.pendingIds = []; // migrate a cache saved before this field existed
+      if (!cache || cache.puuid !== puuid) {
+        cache = { puuid, entries: {}, scan: {}, pendingIds: [], schemaVersion: CACHE_SCHEMA_VERSION };
+      }
+      if (!cache.pendingIds) cache.pendingIds = []; // a cache from before pendingIds existed at all
+      if ((cache.schemaVersion ?? 1) < CACHE_SCHEMA_VERSION) {
+        // One-time repair, bumped whenever an earlier bug could've left a cache stuck in a bad
+        // state (a version bump here always re-runs this, even for a cache that's already been
+        // through a previous one). Two things fixed so far:
+        //  - v2: a queue's backfill page loop got skipped forever once `scan[q].done` was set,
+        //    even if that queue's candidates hadn't all been fetched into `entries` yet — silently
+        //    stranding whichever ones weren't.
+        //  - v3: entries used to cache a precomputed win/loss flag instead of the raw `placement`
+        //    — when the definition of "win" changed (top-4 -> 1st place only), every match cached
+        //    under the old definition stayed wrong forever, since a cached id is never re-fetched.
+        // Re-opening every queue's scan re-runs the (cheap) id-discovery paging so anything
+        // stranded resurfaces into the pending queue; dropping pre-v3 entries (no `placement`)
+        // makes them look undiscovered so they're re-fetched with today's data. Already-correct
+        // entries aren't re-fetched — `enqueue` below skips anything still in `cache.entries`.
+        for (const [id, entry] of Object.entries(cache.entries)) {
+          if (!entry.skip && entry.placement === undefined) delete cache.entries[id];
+        }
+        cache.scan = {};
+        cache.schemaVersion = CACHE_SCHEMA_VERSION;
+      }
 
       const arenaQueueIds = await resolveArenaQueueIds();
 

@@ -32,17 +32,17 @@ describe("isArenaMatch", () => {
 });
 
 describe("buildArenaMatchEntry", () => {
-  it("maps the participant's champion and 1st-place finish onto a Data Dragon id", () => {
+  it("maps the participant's champion and raw placement onto a Data Dragon id", () => {
     const entry = buildArenaMatchEntry(match({ championId: 875, placement: 1 }), "p1", champions);
-    expect(entry).toMatchObject({ champion: "Sett", win: true, gameEnd: 1000 });
+    expect(entry).toMatchObject({ champion: "Sett", placement: 1, gameEnd: 1000 });
   });
 
-  it("does NOT count a top-4 (podium) finish that isn't 1st place as a win", () => {
-    // Riot's own `win` field is true for any top-4 finish — deliberately not used here,
-    // since the Arena Season Journey's own definition of "won" is strictly 1st place.
-    for (const placement of [2, 3, 4]) {
+  it("stores the exact placement rather than a precomputed win flag, for any finish", () => {
+    // Deliberate: caching a derived win/loss flag would freeze whatever "win" meant at fetch
+    // time into the cache forever, since an already-cached match id is never re-fetched.
+    for (const placement of [2, 3, 4, 8]) {
       const entry = buildArenaMatchEntry(match({ placement }), "p1", champions);
-      expect(entry.win).toBe(false);
+      expect(entry.placement).toBe(placement);
     }
   });
 
@@ -83,9 +83,9 @@ describe("arenaQueueIdsFromLcuQueues", () => {
 
 describe("filterBySeasonStart", () => {
   const entries = [
-    { champion: "Sett", win: true, gameEnd: 1000 },
-    { champion: "Ahri", win: true, gameEnd: 2000 },
-    { champion: "Garen", win: false, gameEnd: 3000 },
+    { champion: "Sett", placement: 1, gameEnd: 1000 },
+    { champion: "Ahri", placement: 1, gameEnd: 2000 },
+    { champion: "Garen", placement: 5, gameEnd: 3000 },
   ];
 
   it("keeps only entries at or after the cutoff", () => {
@@ -100,11 +100,11 @@ describe("filterBySeasonStart", () => {
 });
 
 describe("aggregateArenaStats", () => {
-  it("counts games and wins per champion", () => {
+  it("counts games and wins (1st place only) per champion", () => {
     const stats = aggregateArenaStats([
-      { champion: "Sett", win: true },
-      { champion: "Sett", win: false },
-      { champion: "Ahri", win: true },
+      { champion: "Sett", placement: 1 },
+      { champion: "Sett", placement: 4 }, // podium, but not a win
+      { champion: "Ahri", placement: 1 },
     ]);
     expect(stats).toEqual([
       { champion: "Sett", games: 2, wins: 1 },

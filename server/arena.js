@@ -23,11 +23,13 @@ function championIdByKey(champions, key) {
 }
 
 /**
- * Slim per-match record — no scoreboard, just enough to know "did I win, on what champion".
- * "Win" here means finishing 1st, not just top-4/podium: `participant.win` for Arena is actually
- * true for any top-4 (podium) finish, which is a *looser* bar than what "won" means in the
- * Arena Season Journey checklist — that one only checks off a champion on an outright 1st place,
- * i.e. `participant.placement === 1`.
+ * Slim per-match record — no scoreboard, just enough to know the champion and placement.
+ * Stores the raw `placement` rather than a precomputed win/loss flag on purpose: these records
+ * are cached indefinitely (never re-fetched once an id is known), so if "win" were baked in here
+ * and its definition ever changed again, every already-cached match would silently keep judging
+ * itself by the old definition forever. aggregateArenaStats() applies today's definition (1st
+ * place, not just top-4/podium — `participant.win` for Arena is true for any top-4 finish, a
+ * looser bar than what "won" means in the Arena Season Journey checklist) to every entry, always.
  */
 export function buildArenaMatchEntry(match, puuid, champions) {
   if (!isArenaMatch(match)) return null;
@@ -35,7 +37,7 @@ export function buildArenaMatchEntry(match, puuid, champions) {
   if (!me) return null;
   return {
     champion: championIdByKey(champions, me.championId) ?? me.championName,
-    win: me.placement === 1,
+    placement: me.placement,
     gameEnd: match.info.gameEndTimestamp ?? match.info.gameStartTimestamp ?? Date.now(),
   };
 }
@@ -50,13 +52,13 @@ export function filterBySeasonStart(entries, seasonStartMs) {
   return entries.filter((e) => e.gameEnd >= seasonStartMs);
 }
 
-/** One row per champion played, most games first. */
+/** One row per champion played, most games first. A "win" is finishing 1st, not just top-4. */
 export function aggregateArenaStats(entries) {
   const byChamp = new Map();
   for (const e of entries) {
     const c = byChamp.get(e.champion) ?? { champion: e.champion, games: 0, wins: 0 };
     c.games++;
-    if (e.win) c.wins++;
+    if (e.placement === 1) c.wins++;
     byChamp.set(e.champion, c);
   }
   return [...byChamp.values()].sort((a, b) => b.games - a.games);

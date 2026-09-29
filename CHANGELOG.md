@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [1.15.0] - 2026-09-29
+
+### Added
+- **Arena season auto-detection**: a built-in schedule of Arena season boundaries now scopes the Arena tab to the current season by default — no more manual date entry needed (Settings still has an override for when the built-in schedule is wrong or out of date).
+- **Level and Fame** from the live Arena Season Journey, read from the League client, shown next to the win counter on the Arena tab. Verified against the in-game Season Journey screen: exact match on both Fame/level and the 38-champion win count.
+
 ## [1.14.0] - 2026-09-29
 
 ### Added

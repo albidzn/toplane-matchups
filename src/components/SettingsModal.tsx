@@ -154,7 +154,7 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-xs text-slate-400">Arena season start (optional)</span>
+            <span className="mb-1 block text-xs text-slate-400">Arena season start override (optional)</span>
             <input
               type="date"
               value={arenaSeasonStart}
@@ -162,8 +162,9 @@ export default function SettingsModal({ onClose, onSaved }: SettingsModalProps) 
               className={inputClass}
             />
             <span className="mt-1 block text-[11px] text-slate-600">
-              The Arena tab counts wins from this date on instead of your whole account history — set
-              it to match the in-game Arena Season Journey's start. Leave empty to count all-time.
+              The Arena tab already auto-detects the current season from a built-in schedule and
+              scopes your win count to it, matching the in-game Arena Season Journey. Only set this
+              if that date looks wrong.
             </span>
           </label>
 

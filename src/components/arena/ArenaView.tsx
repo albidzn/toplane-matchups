@@ -71,12 +71,24 @@ export default function ArenaView({
           <h2 className="font-display text-lg font-bold text-slate-100">Arena wins</h2>
           <div className="text-xs text-slate-500">
             {arena.backfillComplete === false
-              ? "Still scanning your full match history…"
+              ? "Still scanning your match history…"
               : arena.seasonStart
-                ? `1st-place wins since ${new Date(arena.seasonStart).toLocaleDateString()} (matches the Arena Season Journey)`
-                : "Every champion you've won 1st place with, all-time — set a season start in Settings to match the in-game Season Journey"}
+                ? `1st-place wins since ${new Date(arena.seasonStart).toLocaleDateString()}${
+                    arena.seasonStartSource === "auto" ? " (auto-detected season)" : " (set in Settings)"
+                  }`
+                : "Every champion you've won 1st place with, all-time"}
           </div>
         </div>
+
+        {arena.seasonFame && (
+          <div className="shrink-0 rounded-xl border border-gold-500/30 bg-gold-500/10 px-3 py-2 text-right">
+            <div className="font-display text-sm font-bold text-gold-400">
+              Level {arena.seasonFame.level}
+              {arena.seasonFame.totalLevels ? <span className="text-slate-500">/{arena.seasonFame.totalLevels}</span> : null}
+            </div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-500">{arena.seasonFame.fame.toLocaleString()} Fame</div>
+          </div>
+        )}
 
         <div className="flex shrink-0 items-center gap-3">
           <div className="text-right">

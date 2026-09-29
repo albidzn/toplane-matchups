@@ -9,6 +9,8 @@ import {
   filterBySeasonStart,
   aggregateArenaStats,
 } from "./arena.js";
+import { currentArenaSeasonStartMs } from "./arena-seasons.js";
+import { getArenaSeasonFame } from "./arena-fame.js";
 
 const TTL_MS = 2 * 60 * 1000;
 const DISCOVERY_COUNT = 20; // recent ids checked every refresh, so a just-finished game shows up fast
@@ -165,17 +167,27 @@ export function createArenaService({ dataDir, getChampions }) {
 
       await saveCache(cache);
 
-      const seasonStartMs = process.env.ARENA_SEASON_START ? Date.parse(process.env.ARENA_SEASON_START) : null;
+      // A manual override in Settings wins; otherwise fall back to the hand-maintained season
+      // table so this works out of the box without the user having to look up a date themselves.
+      const manualSeasonStart = process.env.ARENA_SEASON_START ? Date.parse(process.env.ARENA_SEASON_START) : null;
+      const autoSeasonStartMs = currentArenaSeasonStartMs();
+      const seasonStartMs = manualSeasonStart ?? autoSeasonStartMs;
+      const seasonStartSource = manualSeasonStart ? "manual" : autoSeasonStartMs ? "auto" : null;
+
       const realEntries = Object.values(cache.entries).filter((e) => !e.skip);
       const stats = aggregateArenaStats(filterBySeasonStart(realEntries, seasonStartMs));
       const backfillComplete = arenaQueueIds.every((q) => cache.scan[q]?.done) && cache.pendingIds.length === 0;
+
+      const seasonFame = (await lcu.ensureConnected().catch(() => false)) ? await getArenaSeasonFame(lcu) : null;
 
       const result = {
         configured: true,
         updatedAt: Date.now(),
         stats,
         backfillComplete,
-        seasonStart: process.env.ARENA_SEASON_START || null,
+        seasonStart: seasonStartMs ? new Date(seasonStartMs).toISOString() : null,
+        seasonStartSource,
+        seasonFame,
       };
       memArena = result;
       memFetchedAt = Date.now();

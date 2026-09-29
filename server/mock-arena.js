@@ -40,5 +40,13 @@ export function buildMockArena(mode) {
     return { champion, games, wins };
   }).filter((s) => s.games > 0);
 
-  return { configured: true, updatedAt, stats, backfillComplete: true, seasonStart: process.env.ARENA_SEASON_START || null };
+  return {
+    configured: true,
+    updatedAt,
+    stats,
+    backfillComplete: true,
+    seasonStart: process.env.ARENA_SEASON_START || "2026-04-29T00:00:00Z",
+    seasonStartSource: process.env.ARENA_SEASON_START ? "manual" : "auto",
+    seasonFame: { level: 8, fame: 24500, totalLevels: 12, levelProgress: 60 },
+  };
 }

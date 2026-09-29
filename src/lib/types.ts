@@ -260,6 +260,13 @@ export interface ArenaChampionStat {
   wins: number;
 }
 
+export interface ArenaSeasonFame {
+  level: number;
+  fame: number;
+  totalLevels: number;
+  levelProgress: number;
+}
+
 export interface Arena {
   configured: boolean;
   error?: ProfileError;
@@ -267,6 +274,9 @@ export interface Arena {
   stats?: ArenaChampionStat[];
   /** False while the one-time full history scan is still catching up (early refreshes after first use). */
   backfillComplete?: boolean;
-  /** The cutoff date applied to `stats`, if any was set in Settings — null means all-time. */
+  /** The cutoff date applied to `stats` — auto-detected from a built-in season table unless overridden in Settings, or null if neither is available. */
   seasonStart?: string | null;
+  seasonStartSource?: "manual" | "auto" | null;
+  /** Live Season Journey level/Fame from the League client — null when the client isn't running. */
+  seasonFame?: ArenaSeasonFame | null;
 }
